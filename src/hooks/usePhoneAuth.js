@@ -14,7 +14,6 @@ export const usePhoneAuth = ({ onSuccess, onError } = {}) => {
   const recaptchaRef = useRef(null);
 
   useEffect(() => {
-    
     initializeRecaptcha();
   }, []);
 
@@ -26,35 +25,34 @@ export const usePhoneAuth = ({ onSuccess, onError } = {}) => {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-//   const initializeRecaptcha = async () => {
-//     try {
-//       const recaptchaVerifier = new RecaptchaVerifier(
-//         auth,
-//         "recaptcha-container",
-//         {
-//           size: "invisible",
-//           callback: () => console.log("reCAPTCHA solved"),
-//           "expired-callback": () => {
-//             setError("reCAPTCHA expired. Please try again.");
-//             window.recaptchaVerifier.render();
-//           },
-//         }
-//       );
-//       window.recaptchaVerifier = recaptchaVerifier;
-//     } catch (error) {
-//       const errorMessage = "Error initializing verification system";
-//       console.error(errorMessage, error);
-//       setError(errorMessage);
-//       onError?.(errorMessage);
-//     }
-//   };
-const initializeRecaptcha = async () => {
+  //   const initializeRecaptcha = async () => {
+  //     try {
+  //       const recaptchaVerifier = new RecaptchaVerifier(
+  //         auth,
+  //         "recaptcha-container",
+  //         {
+  //           size: "invisible",
+  //           callback: () => console.log("reCAPTCHA solved"),
+  //           "expired-callback": () => {
+  //             setError("reCAPTCHA expired. Please try again.");
+  //             window.recaptchaVerifier.render();
+  //           },
+  //         }
+  //       );
+  //       window.recaptchaVerifier = recaptchaVerifier;
+  //     } catch (error) {
+  //       const errorMessage = "Error initializing verification system";
+  //       console.error(errorMessage, error);
+  //       setError(errorMessage);
+  //       onError?.(errorMessage);
+  //     }
+  //   };
+  const initializeRecaptcha = async () => {
     try {
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.render().then((widgetId) => {
-        //   window.recaptchaVerifier.reset(widgetId);
-        //   console.log(window.recaptchaVerifier)
-
+          //   window.recaptchaVerifier.reset(widgetId);
+          //   console.log(window.recaptchaVerifier)
         });
       } else {
         const recaptchaVerifier = new RecaptchaVerifier(
@@ -78,7 +76,7 @@ const initializeRecaptcha = async () => {
       onError?.(errorMessage);
     }
   };
-  
+
   const handlePhoneNumberChange = (value) => {
     setPhoneNumber(value);
     setError("");
@@ -115,10 +113,10 @@ const initializeRecaptcha = async () => {
 
       try {
         if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.render().then((widgetId) => {
+          window.recaptchaVerifier.render().then((widgetId) => {
             //   window.recaptchaVerifier.reset(widgetId);
-            });
-          }
+          });
+        }
       } catch (e) {
         console.error("Error reinitializing reCAPTCHA:", e);
       }
@@ -137,19 +135,19 @@ const initializeRecaptcha = async () => {
     setError("");
 
     try {
-        console.log(otp)
+      console.log(otp);
       if (!otp || otp.length !== 6) {
         throw new Error("Please enter a valid 6-digit OTP");
       }
 
       const result = await window.confirmationResult.confirm(otp);
-    //   const idToken = await result.user.getIdToken();
+      //   const idToken = await result.user.getIdToken();
 
-    //   const response = await verifyPhoneToken(idToken);
+      //   const response = await verifyPhoneToken(idToken);
 
-    //   if (response.success) {
-        if (result) {
-            console.log(result)
+      //   if (response.success) {
+      if (result) {
+        console.log(result);
         // storeUserData(response);
         onSuccess?.();
         toast.success("Successfully logged in!");
