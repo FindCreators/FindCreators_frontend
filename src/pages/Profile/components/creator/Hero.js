@@ -1,121 +1,81 @@
-import React, { useState } from 'react';
-import { FaEdit } from 'react-icons/fa';
+import React from "react";
+import followerConverter from "../../../../utils/followerConverter";
 
-const CreatorHero = ({ profile }) => {
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleEditProfile = () => {
-    setIsEditing(true);
-    // API call to fetch profile data for editing
-    console.log('Edit profile');
-  };
-
-  const handleSaveProfile = () => {
-    setIsEditing(false);
-    // API call to save profile data
-    console.log('Save profile');
+const Hero = () => {
+  const self = true;
+  const creator = {
+    id: "6744a21ba3967607247732cd",
+    fullName: "Harsh ",
+    email: "michaelburns@example.net",
+    phone: "918797780714",
+    password: "$2a$10$8YcAcKjXJlFrZRO0aXPW5.WqMhZ1WWL7iTCrLwFqc7wA.T3MW/loi",
+    profilePicture:
+      "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+    location: {
+      country: "United States Minor Outlying Islands",
+      city: "Ambermouth",
+    },
+    type: "creator",
+    basicComplete: false,
+    socialHandles: null,
+    followers: 289527,
+    engagementRate: 0,
+    portfolioUrl: "",
+    bio: "Sit despite science want might. Even story professor cover.\nAmount behind coach eight realize Republican. Window sure reduce note thought interest. Cause cultural owner dream level situation issue.",
+    skills: ["Photography", "Content Writing", "Public Speaking"],
+    niche: ["Fitness", "Lifestyle"],
+    languages: ["Spanish"],
+    appliedJobs: null,
+    savedJobs: null,
+    minimumRate: 0,
+    preferredRate: 0,
+    currency: "USD",
+    collabPreferences: null,
+    rating: 4.2,
+    reviewCount: 0,
+    isVerified: false,
+    accountStatus: "active",
+    createdAt: "0001-01-01T00:00:00Z",
+    updatedAt: "0001-01-01T00:00:00Z",
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-lg shadow-lg text-white">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
+    <div class="  relative flex flex-col items-center rounded-[10px] border-[1px] border-gray-200 w-[400px] mx-auto p-4 bg-white bg-clip-border shadow-md shadow-[#F3F3F3] ">
+      <div class="relative flex h-32 w-full justify-center rounded-xl bg-cover">
+        <img
+          src="https://img.freepik.com/free-photo/background-gradient-lights_23-2149304984.jpg?t=st=1733915806~exp=1733919406~hmac=93b073e7a63281743e5e97038e697b0a7943c14ab6bd6ed4ed1291c95b03fff0&w=1480"
+          class="absolute flex h-32 w-full justify-center rounded-xl bg-cover"
+        />
+        <div class="absolute -bottom-12 flex h-[87px] w-[87px] items-center justify-center rounded-full border-[4px] border-white bg-pink-400 ">
           <img
-            src={profile.profilePicture}
-            alt="Profile"
-            className="w-24 h-24 rounded-full mr-4"
+            class="h-full w-full rounded-full"
+            src={creator.profilePicture}
+            alt=""
           />
-          <div>
-            <h2 className="text-2xl font-bold">{profile.fullName}</h2>
-            <p className="text-gray-300">{profile.email}</p>
-            <p className="text-gray-300">{profile.phone}</p>
-            <p className="text-gray-300">{profile.location?.city}, {profile.location?.country}</p>
-          </div>
-        </div>
-        <div className="flex items-center">
-          <button
-            className="bg-white text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white"
-            onClick={handleEditProfile}
-          >
-            <FaEdit className="mr-2" />
-            Edit Profile
-          </button>
         </div>
       </div>
-      {isEditing && (
-        <div className="mt-4">
-          <label className="block text-gray-300">Full Name</label>
-          <input
-            type="text"
-            value={profile.fullName}
-            onChange={(e) => {
-              // Update profile state
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <label className="block text-gray-300 mt-2">Email</label>
-          <input
-            type="email"
-            value={profile.email}
-            onChange={(e) => {
-              // Update profile state
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <label className="block text-gray-300 mt-2">Phone</label>
-          <input
-            type="text"
-            value={profile.phone}
-            onChange={(e) => {
-              // Update profile state
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <label className="block text-gray-300 mt-2">Location</label>
-          <input
-            type="text"
-            value={profile.location?.city}
-            onChange={(e) => {
-              // Update profile state
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4"
-            onClick={handleSaveProfile}
-          >
-            Save
-          </button>
+      <div class="mt-16 flex flex-col items-center">
+        <h4 class="text-xl font-bold text-navy-700 ">
+          {creator.fullName}
+        </h4>
+        <p class="text-base text-center font-normal text-gray-600">{creator.bio}</p>
+      </div>
+      <div class="mt-6 mb-3 flex gap-14 md:!gap-14">
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-2xl font-bold text-navy-700 ">{creator.rating}</p>
+          <p class="text-sm font-normal text-gray-600">Rating</p>
         </div>
-      )}
-      <div className="mt-4">
-        <p className="text-gray-300">{profile.followers} followers • {profile.engagementRate}% engagement rate</p>
-        <p className="text-gray-300">{profile.skills?.join(', ')}</p>
-        <p className="text-gray-300">{profile.niche?.join(', ')}</p>
-        <p className="text-gray-300">{profile.languages?.join(', ')}</p>
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-2xl font-bold text-navy-700 ">{followerConverter(creator.followers)}</p>
+          <p class="text-sm font-normal text-gray-600">Followers</p>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-2xl font-bold text-navy-700 ">{creator.reviewCount}</p>
+          <p class="text-sm font-normal text-gray-600">Reviews</p>
+        </div>
       </div>
-      <div className="mt-4 flex justify-between">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          Open to
-        </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          Add profile section
-        </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          Enhance profile
-        </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          Resources
-        </button>
-      </div>
-      <p className="mt-4 text-gray-300">
-        Tell non-profits you're interested in getting involved with your time and skills
-      </p>
-      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-2">
-        Get started
-      </button>
     </div>
   );
 };
 
-export default CreatorHero;
+export default Hero;
