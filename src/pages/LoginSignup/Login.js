@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { usePhoneAuth } from '../../hooks/usePhoneAuth';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
-import toast from 'react-hot-toast';
-import { loginUser } from '../../network/networkCalls';
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { usePhoneAuth } from "../../hooks/usePhoneAuth";
+import PhoneInput from "react-phone-number-input";
+import { useDispatch } from "react-redux";
+import "react-phone-number-input/style.css";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { login } from "../../redux/actions/authActions";
 
 const Login = () => {
-  // const [phoneNumber, setPhoneNumber] = useState("");
-  const [error, setError] = useState(''); // Add error state
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     phoneNumber,
@@ -19,131 +21,271 @@ const Login = () => {
     loading,
     countdown,
     handlePhoneNumberChange,
-    handleOTPChange,
     sendOTP,
     verifyOTP,
     resetForm,
     resendOTP,
   } = usePhoneAuth({
-    onSuccess: () => {
-      try{
-
-        const data = loginUser( phoneNumber.substring(1, phoneNumber.length))  
-        navigate('/home');
-        
-        }catch(e){
-            setError("Something went wrong")
+    onSuccess: async () => {
+      try {
+        const response = await dispatch(login(phoneNumber.substring(1)));
+        if (response.profile.type === "creator") {
+          navigate("/creator");
+        } else if (response.profile.type === "brand") {
+          navigate("/brand");
+        } else {
+          setError("Invalid user type");
         }
+      } catch (error) {
+        console.error("Login error:", error);
+        setError(error.message);
+      }
     },
     onError: (errorMessage) => {
       toast.error(errorMessage);
-    }
+    },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
+    setError("");
 
-    // Validate phone number
-   
-    if (phoneNumber===undefined || phoneNumber==="" || phoneNumber.length<13) {
-      setError('Please enter a valid 10-digit phone number');
+    if (!phoneNumber || phoneNumber.length < 13) {
+      setError("Please enter a valid phone number");
       return;
     }
-
-    // Send OTP
     sendOTP();
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md md:max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">{`${step === 'PHONE' ? "Login":"Verify Phone"}`}</h2>
-        {step === 'PHONE' ? (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700">Phone</label>
-              <PhoneInput
-                international
-                defaultCountry="IN"
-                value={phoneNumber}
-                onChange={handlePhoneNumberChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 p-12 text-white justify-center items-center">
+        <div className="max-w-md">
+          <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
+          <p className="text-xl mb-8">
+            Connect with top brands and create amazing content together.
+          </p>
+          <div className="space-y-4">
+            <div className="flex items-center">
+              <div className="bg-blue-500 p-2 rounded-full mr-4">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <span>Access exclusive brand collaborations</span>
             </div>
-            {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-              disabled={loading}
-            >
-              {loading ? 'Sending OTP...' : 'Send OTP'}
-            </button>
-          </form>
-        ) : (
-          <div>
-            <div className="mb-6 ">
-              <p className="text-center text-gray-700">Code has been sent to {phoneNumber}</p>
+            <div className="flex items-center">
+              <div className="bg-blue-500 p-2 rounded-full mr-4">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
+              <span>Grow your influence</span>
             </div>
-            <div className="mb-4 flex justify-center">
-              {[...Array(6)].map((_, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  maxLength="1"
-                  value={otp[index] || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^[0-9]*$/.test(value)) {
-                      setOtp((prevOtp) => {
-                        const newOtp = prevOtp.slice(0, index) + value + prevOtp.slice(index + 1);
-                       
-                        return newOtp;
-                      });
-                      if (index < 5) {
-                        document.getElementById(`otp-${index + 1}`).focus();
-                      }
-                    }
-                  }}
-                  onKeyUp={(e) => {
-                    if (e.key === 'Backspace' && !otp[index]) {
-                      setOtp((prevOtp) => prevOtp.slice(0, index) + prevOtp.slice(index + 1));
-                      if (index > 0) {
-                        document.getElementById(`otp-${index - 1}`).focus();
-                      }
-                    }
-                  }}
-                  id={`otp-${index}`}
-                  className={` w-10 h-10 mx-1 text-xl  md:w-12 md:h-12 md:mx-2 text-center md:text-2xl border rounded-lg focus:outline-none focus:border-blue-500 `}
-                  required
-                />
-              ))}
+            <div className="flex items-center">
+              <div className="bg-blue-500 p-2 rounded-full mr-4">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <span>Quick and secure payments</span>
             </div>
-            {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-            <button
-              type="button"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-              onClick={verifyOTP}
-              disabled={loading}
-            >
-              {loading ? 'Verifying OTP...' : 'Verify'}
-            </button>
-            <p
-              className={`mt-2 text-center ${countdown > 0 ? 'text-gray-500' : 'text-blue-500 cursor-pointer'}`}
-              onClick={countdown > 0 ? undefined : resendOTP}
-            >
-              {countdown > 0 ? `Resend OTP in ${countdown}s` : 'Resend OTP'}
-            </p>
-            <p
-              className="mt-2 text-center text-blue-500 cursor-pointer"
-              onClick={resetForm}
-            >
-              Change Number
+          </div>
+        </div>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800">
+              {step === "PHONE" ? "Sign In" : "Verify Phone"}
+            </h2>
+            <p className="text-gray-600 mt-2">
+              {step === "PHONE"
+                ? "Welcome back! Please sign in to continue."
+                : "Almost there! Please verify your phone."}
             </p>
           </div>
-        )}
-        <div id="recaptcha-container"></div>
+
+          {step === "PHONE" ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-lg shadow-sm hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all">
+                  <div className="pl-3 pr-2 flex items-center bg-gray-100 rounded-l-lg"></div>
+                  <PhoneInput
+                    international
+                    defaultCountry="IN"
+                    value={phoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    className="w-full px-4 py-3 rounded-r-lg focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Sending OTP...
+                  </span>
+                ) : (
+                  "Send OTP"
+                )}
+              </button>
+
+              <div className="mt-6 text-center text-sm">
+                <span className="text-gray-600">Don't have an account? </span>
+                <Link
+                  to="/signup"
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Sign up
+                </Link>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg inline-block mb-6">
+                  Code sent to {phoneNumber}
+                </div>
+              </div>
+
+              <div className="flex justify-center space-x-3">
+                {[...Array(6)].map((_, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    maxLength="1"
+                    value={otp[index] || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^[0-9]*$/.test(value)) {
+                        setOtp((prevOtp) => {
+                          const newOtp =
+                            prevOtp.slice(0, index) +
+                            value +
+                            prevOtp.slice(index + 1);
+                          return newOtp;
+                        });
+                        if (index < 5 && value) {
+                          document.getElementById(`otp-${index + 1}`)?.focus();
+                        }
+                      }
+                    }}
+                    onKeyUp={(e) => {
+                      if (e.key === "Backspace" && !otp[index]) {
+                        if (index > 0) {
+                          document.getElementById(`otp-${index - 1}`)?.focus();
+                        }
+                      }
+                    }}
+                    id={`otp-${index}`}
+                    className="w-12 h-12 text-center text-xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                ))}
+              </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={verifyOTP}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </button>
+
+              <div className="space-y-3 text-center">
+                <button
+                  onClick={countdown > 0 ? undefined : resendOTP}
+                  className={`text-sm ${
+                    countdown > 0
+                      ? "text-gray-400"
+                      : "text-blue-600 hover:text-blue-700"
+                  }`}
+                >
+                  {countdown > 0
+                    ? `Resend code in ${countdown}s`
+                    : "Resend code"}
+                </button>
+
+                <button
+                  onClick={resetForm}
+                  className="block w-full text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Change phone number
+                </button>
+              </div>
+            </div>
+          )}
+          <div id="recaptcha-container"></div>
+        </div>
       </div>
     </div>
   );

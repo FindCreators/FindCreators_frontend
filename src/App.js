@@ -13,31 +13,39 @@ import BrandDashboard from "./pages/dashboard/brand/BrandDashboard";
 import CreatorDashboard from "./pages/dashboard/creator/CreatorDashboard";
 import MyJobs from "./pages/dashboard/brand/MyJobs";
 import JobProposals from "./pages/dashboard/brand/JobProposals";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import CreatorDashboardLayout from "./components/dashboard/layout/CreatorDashboardLayout";
 
 function App() {
   return (
-    <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/profile" element={<Profile />} />
+    <Provider store={store}>
+      <BrowserRouter>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
 
-        <Route path="/brand" element={<DashboardLayout userType="brand" />}>
-          <Route index element={<BrandDashboard />} />
-          <Route path="jobs" element={<MyJobs />} />
-          <Route path="post-job" element={<PostJob />} />
-          <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
-        </Route>
+          <Route path="/brand" element={<DashboardLayout userType="brand" />}>
+            <Route index element={<BrandDashboard />} />
+            <Route path="jobs" element={<MyJobs />} />
+            <Route path="post-job" element={<PostJob />} />
+            <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
+          </Route>
 
-        <Route path="/creator" element={<DashboardLayout userType="creator" />}>
-          <Route index element={<CreatorDashboard />} />
-          <Route path="available-jobs" element={<AvailableJobs />} />
-          <Route path="my-applications" element={<ApplicationTracker />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          <Route
+            path="/creator"
+            element={<CreatorDashboardLayout userType="creator" />}
+          >
+            <Route index element={<CreatorDashboard />} />
+            <Route path="available-jobs" element={<AvailableJobs />} />
+            <Route path="my-applications" element={<ApplicationTracker />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </Provider>
   );
 }
 

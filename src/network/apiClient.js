@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:10000/",
+  baseURL: "https://findcreators-450258334833.asia-south2.run.app/",
   // baseURL:
   //   process.env.NODE_ENV === "production"
   //     ? "https://travelgo-537037621947.us-central1.run.app/api"
@@ -54,14 +54,11 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error("Request timeout"));
     }
     if (error.response) {
-
-
       const message = error.response.data.error || "An error occurred";
       toast.error(message);
       return Promise.reject(new Error(message));
-
     }
-    
+
     toast.error("Network error. Please check your connection.");
     return Promise.reject(new Error("Network error"));
   }
