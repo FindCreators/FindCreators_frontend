@@ -36,3 +36,40 @@ export const createUser = async (entity, profile) => {
   localStorage.setItem("profile", JSON.stringify(data.profile));
   return data;
 };
+
+export const createJobListing = async (jobData) => {
+  const data = await makeRequest({
+    method: "post",
+    url: API_URLS.POST_JOB_LISTING,
+    data: jobData,
+  });
+  return data;
+};
+
+export const getBrandListings = async (page, limit, filters = {}) => {
+  const queryParams = new URLSearchParams({
+    page,
+    limit,
+  });
+
+  if (filters.status && filters.status !== "all") {
+    queryParams.append("status", filters.status);
+  }
+  if (filters.categories?.length > 0) {
+    queryParams.append("categories", filters.categories.join(","));
+  }
+  if (filters.budget) {
+    queryParams.append("budget", filters.budget);
+  }
+
+  const response = await makeRequest({
+    url: `${API_URLS.GET_BRAND_LISTINGS}?${queryParams}`,
+  });
+  return {
+    data: response.data || [],
+    total: response.total || 0,
+    page: response.page || 1,
+    limit: response.limit || 10,
+    totalPages: response.totalPages || 1,
+  };
+};
