@@ -83,8 +83,8 @@ const MyJobs = () => {
     fetchJobs();
   }, [pagination.page, filters]);
 
-  const handleViewProposals = (jobId) => {
-    navigate(`/brand/jobs/${jobId}/proposals`);
+  const handleViewProposals = (jobId, applicants) => {
+    navigate(`/brand/jobs/${jobId}/proposals`, { state: { applicants } });
   };
 
   const handleStatusChange = (statusId) => {
@@ -191,7 +191,7 @@ const MyJobs = () => {
                 <div className="flex items-center gap-4">
                   <button
                     className="text-green-600 hover:text-green-700 font-medium transition-colors"
-                    onClick={() => handleViewProposals(job.id)}
+                    onClick={() => handleViewProposals(job.id, job.applicants)}
                   >
                     View proposals
                   </button>

@@ -46,7 +46,7 @@ export const usePhoneAuth = ({ onSuccess, onError } = {}) => {
       setError(
         "Error initializing verification system. Please refresh the page."
       );
-      onError?.("Error initializing verification system");
+      // onError?.("Error initializing verification system");
     }
   };
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Login from "./pages/LoginSignup/Login";
 import Signup from "./pages/LoginSignup/Signup";
@@ -16,34 +16,49 @@ import JobProposals from "./pages/dashboard/brand/JobProposals";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import CreatorDashboardLayout from "./components/dashboard/layout/CreatorDashboardLayout";
+import BrandProfile from "./pages/dashboard/brand/BrandProfile";
+import CreatorProfile from "./components/dashboard/creator/CreatorProfile";
+
+function AppContent() {
+  const location = useLocation(); // useLocation must be inside BrowserRouter
+
+  return (
+    <>
+      {/* Show NavBar only on the root URL */}
+      {location.pathname === "/" && <NavBar />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        <Route path="/brand" element={<DashboardLayout userType="brand" />}>
+          <Route path="profile" element={<BrandProfile />} />
+
+          <Route index element={<BrandDashboard />} />
+          <Route path="jobs" element={<MyJobs />} />
+          <Route path="post-job" element={<PostJob />} />
+          <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
+        </Route>
+
+        <Route
+          path="/creator"
+          element={<CreatorDashboardLayout userType="creator" />}
+        >
+          <Route index element={<CreatorDashboard />} />
+          <Route path="profile" element={<CreatorProfile />} />
+          <Route path="available-jobs" element={<AvailableJobs />} />
+          <Route path="my-applications" element={<ApplicationTracker />} />
+        </Route>
+      </Routes>
+    </>
+  );
+}
 
 function App() {
   return (
     <Provider store={store}>
       <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<Profile />} />
-
-          <Route path="/brand" element={<DashboardLayout userType="brand" />}>
-            <Route index element={<BrandDashboard />} />
-            <Route path="jobs" element={<MyJobs />} />
-            <Route path="post-job" element={<PostJob />} />
-            <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
-          </Route>
-
-          <Route
-            path="/creator"
-            element={<CreatorDashboardLayout userType="creator" />}
-          >
-            <Route index element={<CreatorDashboard />} />
-            <Route path="available-jobs" element={<AvailableJobs />} />
-            <Route path="my-applications" element={<ApplicationTracker />} />
-          </Route>
-        </Routes>
+        <AppContent />
       </BrowserRouter>
     </Provider>
   );

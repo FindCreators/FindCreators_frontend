@@ -1,5 +1,9 @@
+import axios from "axios";
 import { makeRequest } from "./apiHelpers";
 import { API_URLS } from "./apiUrls";
+import apiClient from "./apiClient";
+
+const baseURL = "https://findcreators-450258334833.asia-south2.run.app";
 
 export const validateNewEmailorPhone = async ({
   entity,
@@ -72,4 +76,93 @@ export const getBrandListings = async (page, limit, filters = {}) => {
     limit: response.limit || 10,
     totalPages: response.totalPages || 1,
   };
+};
+
+export const getBrandProfile = async (id) => {
+  const data = await makeRequest({
+    url: `${API_URLS.GET_BRAND_PROFILE}${id ? `?id=${id}` : ""}`,
+  });
+  return data;
+};
+
+export const getCreatorProfile = async (id) => {
+  const data = await makeRequest({
+    url: `${API_URLS.GET_CREATOR_PROFILE}${id ? `?id=${id}` : ""}`,
+  });
+  return data;
+};
+
+export const updateBrandProfile = async (profileData) => {
+  const formattedData = Object.entries(profileData).map(([key, value]) => ({
+    key,
+    value,
+  }));
+
+  try {
+    const response = await apiClient.patch(
+      API_URLS.UPDATE_BRAND_PROFILE,
+      formattedData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating brand profile:", error);
+    throw error;
+  }
+};
+
+export const uploadBrandLogo = async (formData) => {
+  try {
+    const response = await apiClient.patch(
+      API_URLS.UPLOAD_BRAND_LOGO,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Axios will handle this correctly
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading brand logo:", error);
+    throw error;
+  }
+};
+
+export const getListings = async (filters = {}) => {
+  const queryParams = new URLSearchParams({
+    page: filters.page || 1,
+    limit: filters.limit || 10,
+    ...(filters.budget && { budget: filters.budget }),
+    ...(filters.categories?.length && {
+      categories: filters.categories.join(","),
+    }),
+  });
+
+  const data = await makeRequest({
+    url: `${API_URLS.GET_LISTINGS}/?${queryParams}`,
+  });
+  return data;
+};
+
+export const applyToJob = async (listingId) => {
+  const data = await makeRequest({
+    method: "PATCH",
+    url: API_URLS.APPLY_TO_LISTING,
+    data: { listingId },
+  });
+  return data;
+};
+
+export const getCreatorsByIdArray = async (ids) => {
+  const data = await makeRequest({
+    method: "POST",
+    url: "/api/creators-by-id-array",
+    data: { ids },
+  });
+  return data;
 };

@@ -2,11 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const apiClient = axios.create({
-  baseURL: "https://findcreators-450258334833.asia-south2.run.app/",
-  // baseURL:
-  //   process.env.NODE_ENV === "production"
-  //     ? "https://travelgo-537037621947.us-central1.run.app/api"
-  //     : "http://localhost:5000/api",
+  baseURL: "https://findcreators-537037621947.asia-south2.run.app",
   timeout: 120000,
   withCredentials: false,
 });
@@ -25,7 +21,10 @@ apiClient.interceptors.request.use(
           }
           config.headers["x-access-token"] = cleanedToken;
         }
-        config.headers["Content-Type"] = "application/json";
+        // Only set Content-Type to application/json if it's not already set
+        if (!config.headers["Content-Type"]) {
+          config.headers["Content-Type"] = "application/json";
+        }
       }
       return config;
     } catch (error) {
