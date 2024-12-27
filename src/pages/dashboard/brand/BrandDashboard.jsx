@@ -188,41 +188,57 @@ const BrandDashboard = () => {
             </div>
           ) : (
             <div className="divide-y">
-              {dashboardData.latestActiveListings.map((job) => (
-                <div
-                  key={job.id}
-                  className="py-4 flex justify-between items-center"
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">{job.title}</h3>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        <span>
-                          {job.location.city}, {job.location.country}
+              {dashboardData.latestActiveListings?.length > 0 ? (
+                <div className="divide-y">
+                  {dashboardData.latestActiveListings.map((job) => (
+                    <div
+                      key={job.id}
+                      className="py-4 flex justify-between items-center"
+                    >
+                      <div>
+                        <h3 className="font-medium text-gray-900">
+                          {job.title}
+                        </h3>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            <span>
+                              {job.location.city}, {job.location.country}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>{formatDate(job.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm">
+                          <span className="text-gray-500">
+                            {job.applicationsCount} applications
+                          </span>
+                        </div>
+                        <div className="text-sm font-medium text-green-600">
+                          {job.currency} {job.budget.toLocaleString()}
+                        </div>
+                        <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                          {job.status}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDate(job.createdAt)}</span>
-                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm">
-                      <span className="text-gray-500">
-                        {job.applicationsCount} applications
-                      </span>
-                    </div>
-                    <div className="text-sm font-medium text-green-600">
-                      {job.currency} {job.budget.toLocaleString()}
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                      {job.status}
-                    </span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No active job posts yet.</p>
+                  <button
+                    onClick={() => navigate("/brand/post-job")}
+                    className="text-blue-600 hover:text-blue-700 mt-2"
+                  >
+                    Create your first job post →
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

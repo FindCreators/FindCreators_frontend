@@ -48,14 +48,38 @@ const BrandProfile = () => {
       setIsLoading(false);
     }
   };
-
   const handleUpdateProfile = async (data) => {
     try {
-      const updatedProfile = await updateBrandProfile({
-        ...profile,
-        ...data,
-      });
-      setProfile(updatedProfile.data);
+      const validKeys = [
+        "companyName",
+        "bio",
+        "email",
+        "phone",
+        "logo",
+        "website",
+        "description",
+        "location",
+        "industry",
+        "companySize",
+        "socialHandles",
+        "hiringBudget",
+      ];
+
+      // Log the keys in the data object
+      console.log("Data keys:", Object.keys(data));
+
+      // Filter the data to only include valid keys
+      const filteredData = Object.keys(data).reduce((acc, key) => {
+        if (validKeys.includes(key)) {
+          acc[key] = data[key];
+        }
+        return acc;
+      }, {});
+
+      console.log("Filtered data:", filteredData);
+
+      const updatedProfile = await updateBrandProfile(filteredData);
+      setProfile(updatedProfile);
       toast.success("Profile updated successfully");
       setActiveModal(null);
     } catch (error) {
@@ -63,7 +87,6 @@ const BrandProfile = () => {
       console.error("Profile update error:", error);
     }
   };
-
   const handleImageUpload = async (type, file) => {
     try {
       const formData = new FormData();

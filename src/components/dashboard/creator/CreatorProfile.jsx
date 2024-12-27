@@ -25,7 +25,10 @@ import PortfolioSection from "./sections/PortfolioSection";
 import StatsSection from "./sections/StatsSection";
 import ReviewsSection from "./sections/ReviewsSection";
 import { makeRequest } from "../../../network/apiHelpers";
-import { getCreatorProfile } from "../../../network/networkCalls";
+import {
+  getCreatorProfile,
+  updateCreatorProfile,
+} from "../../../network/networkCalls";
 
 const CreatorProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -54,14 +57,7 @@ const CreatorProfile = () => {
 
   const handleUpdateProfile = async (data) => {
     try {
-      const response = await fetch("/api/creator/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      const updatedProfile = await response.json();
+      const updatedProfile = await updateCreatorProfile(data);
       setProfile(updatedProfile);
       toast.success("Profile updated successfully");
       setActiveModal(null);
@@ -69,7 +65,6 @@ const CreatorProfile = () => {
       toast.error("Failed to update profile");
     }
   };
-
   const handleImageUpload = async (type, file) => {
     try {
       const formData = new FormData();

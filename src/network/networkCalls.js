@@ -93,21 +93,15 @@ export const getCreatorProfile = async (id) => {
 };
 
 export const updateBrandProfile = async (profileData) => {
-  const formattedData = Object.entries(profileData).map(([key, value]) => ({
-    key,
-    value,
-  }));
-
   try {
-    const response = await apiClient.patch(
-      API_URLS.UPDATE_BRAND_PROFILE,
-      formattedData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await makeRequest({
+      method: "PATCH",
+      url: "/api/brand",
+      data: profileData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating brand profile:", error);
@@ -165,4 +159,21 @@ export const getCreatorsByIdArray = async (ids) => {
     data: { ids },
   });
   return data;
+};
+
+export const updateCreatorProfile = async (profileData) => {
+  try {
+    const response = await makeRequest({
+      method: "PATCH",
+      url: "/api/creator",
+      data: profileData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error updating creator profile:", error);
+    throw error;
+  }
 };

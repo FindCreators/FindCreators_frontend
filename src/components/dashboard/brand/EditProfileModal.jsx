@@ -10,8 +10,56 @@ const EditProfileModal = ({
 }) => {
   const [formData, setFormData] = useState(initialData || {});
 
-  if (!isOpen) return null;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    const updatedFields = {};
+
+    switch (section) {
+      case "basic":
+        const basicFields = ["companyName", "industry", "companySize"];
+        basicFields.forEach((field) => {
+          if (formData[field] && formData[field] !== initialData[field]) {
+            updatedFields[field] = formData[field];
+          }
+        });
+        break;
+
+      case "about":
+        ["bio", "description"].forEach((field) => {
+          if (formData[field] && formData[field] !== initialData[field]) {
+            updatedFields[field] = formData[field];
+          }
+        });
+        break;
+
+      case "contact":
+        ["website", "email", "phone"].forEach((field) => {
+          if (formData[field] && formData[field] !== initialData[field]) {
+            updatedFields[field] = formData[field];
+          }
+        });
+        break;
+
+      case "social":
+        if (
+          formData.socialHandles &&
+          JSON.stringify(formData.socialHandles) !==
+            JSON.stringify(initialData.socialHandles)
+        ) {
+          updatedFields.socialHandles = formData.socialHandles;
+        }
+        break;
+    }
+
+    if (Object.keys(updatedFields).length > 0) {
+      onSave(updatedFields);
+    } else {
+      onClose();
+    }
+  };
+
+  // Rest of the component remains the same (renderFields function, etc.)
   const renderFields = () => {
     switch (section) {
       case "basic":
@@ -88,20 +136,36 @@ const EditProfileModal = ({
 
       case "about":
         return (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              About Company
-            </label>
-            <textarea
-              value={formData.description || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              rows={6}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Tell creators about your company..."
-            />
-          </div>
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              <textarea
+                value={formData.bio || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, bio: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Brief bio about your company..."
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                value={formData.description || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={6}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Detailed description about your company..."
+              />
+            </div>
+          </>
         );
 
       case "contact":
@@ -187,6 +251,8 @@ const EditProfileModal = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
       <div className="min-h-screen px-4 text-center">
@@ -203,12 +269,7 @@ const EditProfileModal = ({
               Information
             </h3>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onSave(formData);
-              }}
-            >
+            <form onSubmit={handleSubmit}>
               {renderFields()}
 
               <div className="mt-6 flex justify-end gap-3">
