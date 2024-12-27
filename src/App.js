@@ -95,10 +95,10 @@ function AppContent() {
       //   members: ["67646e356fce57a11e76bfc2",],
       // });
 
-      const channel = client.channel("messaging", "findcreators", {
+      const channel = client.channel("messaging", "newcha2", {
         name: "FindCreators Chat",
         image: "https://bit.ly/2O35mws",
-        members: [user.id],
+        members: ["67646e356fce57a11e76bfc2", "67680a649a59a1a5e265d476"],
       });
       await channel.watch();
       console.log("Channel created successfully");
