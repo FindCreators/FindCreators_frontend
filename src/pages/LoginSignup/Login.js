@@ -10,7 +10,7 @@ import { login } from "../../redux/actions/authActions";
 
 const Login = () => {
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const {
@@ -30,9 +30,9 @@ const Login = () => {
       try {
         const response = await dispatch(login(phoneNumber.substring(1)));
         if (response.profile.type === "creator") {
-          navigate("/creator");
+          // navigate("/creator");
         } else if (response.profile.type === "brand") {
-          navigate("/brand");
+          // navigate("/brand");
         } else {
           setError("Invalid user type");
         }

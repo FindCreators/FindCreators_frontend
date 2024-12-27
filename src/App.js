@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-
-// Stream Chat
 import { StreamChat } from "stream-chat";
 import {
   Chat,
@@ -12,7 +10,10 @@ import {
   Window,
   MessageList,
   MessageInput,
+  ChannelHeader,
+  Thread,
 } from "stream-chat-react";
+import "stream-chat-react/dist/css/v2/index.css";
 
 // Pages
 import Home from "./pages/Home/Home";
@@ -49,11 +50,18 @@ function AppContent() {
   const [userToken, setUserToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [channel, setChannel] = useState(null);
 
+  // Fetch user token and initialize Stream Chat user
   useEffect(() => {
     const fetchUserToken = async () => {
       try {
+        setIsLoading(true);
         const data = await getUserToken();
+        console.log("Fetched token data:", data);
+
+        // Set user data for Stream Chat
         setUserToken(data.token);
         setUser({
           id: data.userId,
@@ -62,6 +70,7 @@ function AppContent() {
         });
       } catch (error) {
         console.error("Error fetching user token:", error);
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -70,28 +79,52 @@ function AppContent() {
     fetchUserToken();
   }, []);
 
+  // Connect user to Stream Chat client and create channel
   useEffect(() => {
-    if (userToken && user) {
-      client.connectUser(user, userToken).catch((error) => {
-        console.error("Error connecting user:", error);
+    const connectUserAndCreateChannel = async () => {
+      if (!userToken || !user) {
+        return;
+      }
+      await client.connectUser(user, client.devToken(user.id));
+      console.log("User connected successfully");
+
+      // Create a channel for messaging
+      // const channel = client.channel("messaging", "findcreators", {
+      //   name: "FindCreators Chat",
+      //   image: "https://bit.ly/2O35mws",
+      //   members: ["67646e356fce57a11e76bfc2",],
+      // });
+
+      const channel = client.channel("messaging", "findcreators", {
+        name: "FindCreators Chat",
+        image: "https://bit.ly/2O35mws",
+        members: [user.id],
+      });
+      await channel.watch();
+      console.log("Channel created successfully");
+      setChannel(channel);
+    };
+
+    connectUserAndCreateChannel();
+
+    if (client) {
+      client.on("connection.recovered", () => {
+        console.log("Connection recovered");
       });
     }
-
-    // Cleanup on unmount
-    return () => {
-      if (client.userID) {
-        client.disconnectUser();
-      }
-    };
   }, [userToken, user]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  // Display error or loading state
+
+  if (hasError) {
+    return (
+      <div>Error initializing the application. Please try again later.</div>
+    );
   }
 
   return (
     <>
-      {/* Show NavBar only on specific routes */}
+      {/* Show NavBar only on the Home route */}
       {location.pathname === "/" && <NavBar />}
       <Routes>
         {/* Public Routes */}
@@ -119,17 +152,24 @@ function AppContent() {
           <Route path="my-applications" element={<ApplicationTracker />} />
         </Route>
 
-        {/* Stream Chat Example */}
+        {/* Stream Chat Route */}
         <Route
           path="/chat"
           element={
             <Chat client={client} theme="messaging light">
-              <ChannelList />
-              <Channel>
+              <ChannelList
+                filters={{ type: "messaging", members: { $in: [user?.id] } }}
+                sort={{ last_message_at: -1 }}
+                options={{ limit: 20 }}
+                ListEmptyIndicator={() => <p>No channels available</p>}
+              />
+              <Channel channel={channel}>
                 <Window>
+                  <ChannelHeader />
                   <MessageList />
                   <MessageInput />
                 </Window>
+                <Thread />
               </Channel>
             </Chat>
           }
