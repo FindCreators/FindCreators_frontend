@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
@@ -37,31 +37,57 @@ import CreatorDashboard from "./pages/dashboard/creator/CreatorDashboard";
 import AvailableJobs from "./pages/dashboard/creator/AvailableJobs";
 import ApplicationTracker from "./components/dashboard/creator/ApplicationTracker";
 
+// API
+import { getUserToken } from "./network/networkCalls";
+
 // Initialize Stream Chat
 const apiKey = "drugqfqnfynm"; // Replace with your actual API key
 const client = StreamChat.getInstance(apiKey);
 
 function AppContent() {
   const location = useLocation();
+  const [userToken, setUserToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // // Example User Login for Stream Chat
-  // React.useEffect(() => {
-  //   const connectUser = async () => {
-  //     const user = {
-  //       id: "67646e356fce57a11e76bfc2",
-  //       name: "John Doe",
-  //       image: "https://via.placeholder.com/150",
-  //     };
-  //     const token =
-  //       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzU0ODE5MDgsImlkIjoiNjc2NDZlMzU2ZmNlNTdhMTFlNzZiZmMyIiwidHlwZSI6ImNyZWF0b3IifQ.D4_h9FvrnZvytJJcK6R9sbAvDNhFvCY_SiY2MuGGMNw"; // Replace with token from your backend
-  //     await client.connectUser(user, token);
-  //   };
+  useEffect(() => {
+    const fetchUserToken = async () => {
+      try {
+        const data = await getUserToken();
+        setUserToken(data.token);
+        setUser({
+          id: data.userId,
+          name: data.name,
+          image: data.image,
+        });
+      } catch (error) {
+        console.error("Error fetching user token:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  //   connectUser();
+    fetchUserToken();
+  }, []);
 
-  //   // Cleanup on unmount
-  //   return () => client.disconnectUser();
-  // }, []);
+  useEffect(() => {
+    if (userToken && user) {
+      client.connectUser(user, userToken).catch((error) => {
+        console.error("Error connecting user:", error);
+      });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (client.userID) {
+        client.disconnectUser();
+      }
+    };
+  }, [userToken, user]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

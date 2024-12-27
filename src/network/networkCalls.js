@@ -1,9 +1,9 @@
-import axios from "axios";
+// import axios from "axios";
 import { makeRequest } from "./apiHelpers";
 import { API_URLS } from "./apiUrls";
 import apiClient from "./apiClient";
 
-const baseURL = "https://findcreators-450258334833.asia-south2.run.app";
+// const baseURL = "https://findcreators-450258334833.asia-south2.run.app";
 
 export const validateNewEmailorPhone = async ({
   entity,
@@ -177,3 +177,11 @@ export const updateCreatorProfile = async (profileData) => {
     throw error;
   }
 };
+
+export const getUserToken = async () => {
+  const data = await makeRequest({
+    url: API_URLS.GET_CHAT_TOKEN,
+  });
+  return data;
+};
+
