@@ -7,17 +7,19 @@ import {
   Users,
   Bell,
   UserCircle,
+  MessageCircle,
 } from "lucide-react";
 
 const DashboardLayout = ({ userType }) => {
   const location = useLocation();
-  const isBrand = userType === "brand";
+  // const isBrand = userType === "brand";
 
   const brandMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/brand" },
     { icon: PlusCircle, label: "Post New Job", path: "/brand/post-job" },
     { icon: ClipboardList, label: "My Jobs", path: "/brand/jobs" },
     { icon: Users, label: "Applications", path: "/brand/applications" },
+    {icon: MessageCircle, label:"Messages",path:"/chat"}
   ];
 
   return (

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Camera, Edit2 } from "lucide-react";
+import { Camera } from "lucide-react";
 import toast from "react-hot-toast";
 import EditProfileModal from "./EditProfileModal"; // Adjust the path as necessary
 

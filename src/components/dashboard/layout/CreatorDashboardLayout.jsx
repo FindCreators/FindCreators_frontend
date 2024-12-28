@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Bell,
   UserCircle,
+  MessageCircle,
 } from "lucide-react";
 
 const CreatorDashboardLayout = () => {
@@ -23,6 +24,8 @@ const CreatorDashboardLayout = () => {
       label: "My Applications",
       path: "/creator/my-applications",
     },
+    {icon:MessageCircle, label:"Messages",path:"/chat"}
+
   ];
 
   return (

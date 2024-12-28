@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const profile = localStorage.getItem("profile");
+  const userType =  useSelector((state) => state.auth.userType);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -14,7 +16,7 @@ const NavBar = () => {
     <nav className="flex items-center justify-between px-6 py-4 shadow-xl relative">
       {/* Logo */}
       <a
-        href="/"
+        href={`/${userType}`}
         className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
       >
         FindCreators

@@ -3,15 +3,15 @@ import React, { useEffect, useState } from "react";
 import {
   Search,
   SlidersHorizontal,
-  ThumbsUp,
   MessageCircle,
   Star,
   MapPin,
   Users,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getCreatorsByIdArray } from "../../../network/networkCalls";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const ProposalSkeleton = () => (
   <div className="p-6 border-b border-gray-200 animate-pulse">
@@ -36,11 +36,14 @@ const ProposalSkeleton = () => (
 
 const JobProposals = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [proposals, setProposals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const applicants = location.state?.applicants || [];
   const jobDetails = location.state?.jobDetails;
+  const user = useSelector((state) => state.auth.user);
+  const userType = useSelector((state) => state.auth.userType);
 
   useEffect(() => {
     fetchProposals();
@@ -74,6 +77,18 @@ const JobProposals = () => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
     return count;
+  };
+
+  const createChannel = (proposal) => {
+    const channelData = {
+      creatorName: proposal.fullName,
+      creatorImage: proposal.profilePicture,
+      creatorId: proposal.id,
+      brandName: user.companyName,
+      brandImage: user.logo,
+      brandId: user.id,
+    };
+    navigate("/chat", { state: { channelData } });
   };
 
   return (
@@ -175,7 +190,10 @@ const JobProposals = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                      <button
+                        className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                        onClick={() => createChannel(proposal)}
+                      >
                         <MessageCircle className="h-5 w-5 text-gray-600" />
                       </button>
                       <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
