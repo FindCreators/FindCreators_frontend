@@ -28,9 +28,12 @@ import CreatorDashboard from "./pages/dashboard/creator/CreatorDashboard";
 import AvailableJobs from "./pages/dashboard/creator/AvailableJobs";
 import ApplicationTracker from "./components/dashboard/creator/ApplicationTracker";
 import MyChat from "./pages/chat/MyChat";
+import EditJob from "./pages/dashboard/brand/EditJob";
 
 function AppContent() {
   const location = useLocation();
+
+  const google_api_key = "AIzaSyD-9tSrZJ2T0Ji0Y4Jq5l2J9v4v4v4v4v4"; // Replace with your Google API key
 
   // Fetch user token and initialize Stream Chat user
 
@@ -51,6 +54,8 @@ function AppContent() {
           <Route path="jobs" element={<MyJobs />} />
           <Route path="post-job" element={<PostJob />} />
           <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
+          <Route path="jobs/:jobId/edit" element={<EditJob />} />{" "}
+          {/* New route for EditJob */}
         </Route>
 
         {/* Creator Dashboard Routes */}

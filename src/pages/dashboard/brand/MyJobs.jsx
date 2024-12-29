@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MessageCircle, MoreHorizontal, Loader } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getBrandListings } from "../../../network/networkCalls";
+import JobOptionsPopup from "../../../components/dashboard/brand/JobOptionsPopup";
 
 const MyJobs = () => {
   const navigate = useNavigate();
@@ -25,20 +26,11 @@ const MyJobs = () => {
     "action-needed": 0,
     hiring: 0,
   });
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const buttonRef = useRef(null);
 
   const jobStatuses = [
     { label: "All Jobs", count: statusCounts.all, id: "all" },
-    {
-      label: "In progress",
-      count: statusCounts["in-progress"],
-      id: "in-progress",
-    },
-    {
-      label: "Action needed",
-      count: statusCounts["action-needed"],
-      id: "action-needed",
-    },
-    { label: "Hiring", count: statusCounts.hiring, id: "hiring" },
   ];
 
   const fetchJobs = async () => {
@@ -50,7 +42,6 @@ const MyJobs = () => {
         filters
       );
 
-      // Update to use response.data instead of response.listings
       setJobs(response.data || []);
       setPagination((prev) => ({
         ...prev,
@@ -58,7 +49,6 @@ const MyJobs = () => {
         totalJobs: response.total,
       }));
 
-      // Update status counts based on response.data
       const newStatusCounts = {
         all: response.data?.length || 0,
         "in-progress":
@@ -119,7 +109,6 @@ const MyJobs = () => {
         </div>
       </div>
 
-      {/* Status Tabs */}
       <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
         {jobStatuses.map((status) => (
           <button
@@ -136,8 +125,6 @@ const MyJobs = () => {
           </button>
         ))}
       </div>
-
-      {/* Jobs List */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <Loader className="w-8 h-8 animate-spin text-green-600" />
@@ -147,7 +134,7 @@ const MyJobs = () => {
           <p className="text-gray-500">No jobs found</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow relative">
           {jobs.map((job, index) => (
             <div
               key={job.id}
@@ -195,17 +182,28 @@ const MyJobs = () => {
                   >
                     View proposals
                   </button>
-                  <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <button
+                    ref={buttonRef}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => setSelectedJobId(job.id)}
+                  >
                     <MoreHorizontal className="h-5 w-5" />
                   </button>
                 </div>
               </div>
+              {selectedJobId === job.id && (
+                <JobOptionsPopup
+                  jobId={job.id}
+                  onClose={() => setSelectedJobId(null)}
+                  fetchJobs={fetchJobs}
+                  buttonRef={buttonRef}
+                />
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="mt-6 flex justify-center gap-2">
           {[...Array(pagination.totalPages)].map((_, i) => (

@@ -48,20 +48,14 @@ const JobCard = ({ job, onApply, isApplied }) => {
               {job.category}
             </span>
           </div>
-
-          {/* Budget */}
-          <div className="text-right md:text-left">
+          <div className="">
             <div className="text-2xl font-bold text-gray-900">
               {job.currency} {job.budget}
             </div>
             <span className="text-sm text-gray-500">{job.duration}</span>
           </div>
         </div>
-
-        {/* Description */}
         <p className="mt-4 text-gray-600 leading-relaxed">{job.description}</p>
-
-        {/* Skills */}
         {job.skills?.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {job.skills.map((skill, index) => (
@@ -83,7 +77,7 @@ const JobCard = ({ job, onApply, isApplied }) => {
               {job.location.city}, {job.location.country}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             <Calendar className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-600">
               {daysUntilDeadline(job.deadline)}

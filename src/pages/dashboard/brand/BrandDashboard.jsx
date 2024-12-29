@@ -49,7 +49,7 @@ const BrandDashboard = () => {
     totalActiveListings: 0,
     totalApplications: 0,
     totalSpent: 0,
-    latestActiveListings: [],
+    latestActiveListings: [], // Initialize as an empty array
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -63,7 +63,7 @@ const BrandDashboard = () => {
       const response = await makeRequest({
         url: "/api/brand-dashboard",
       });
-      setDashboardData(response);
+      setDashboardData(response || {}); // Ensure response is not null
     } catch (error) {
       toast.error("Failed to load dashboard data");
       console.error("Dashboard fetch error:", error);
@@ -90,7 +90,7 @@ const BrandDashboard = () => {
     {
       icon: DollarSign,
       label: "Total Spent",
-      value: `$${dashboardData.totalSpent.toLocaleString()}`,
+      value: `$${dashboardData.totalSpent?.toLocaleString() || 0}`,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
     },
@@ -187,41 +187,42 @@ const BrandDashboard = () => {
             </div>
           ) : (
             <div className="divide-y">
-              {dashboardData.latestActiveListings.map((job) => (
-                <div
-                  key={job.id}
-                  className="py-4 flex justify-between items-center"
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">{job.title}</h3>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        <span>
-                          {job.location.city}, {job.location.country}
+              {dashboardData.latestActiveListings > 0 &&
+                dashboardData.latestActiveListings.map((job) => (
+                  <div
+                    key={job.id}
+                    className="py-4 flex justify-between items-center"
+                  >
+                    <div>
+                      <h3 className="font-medium text-gray-900">{job.title}</h3>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          <span>
+                            {job.location.city}, {job.location.country}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(job.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm">
+                        <span className="text-gray-500">
+                          {job.applicationsCount} applications
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDate(job.createdAt)}</span>
+                      <div className="text-sm font-medium text-green-600">
+                        {job.currency} {job.budget.toLocaleString()}
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm">
-                      <span className="text-gray-500">
-                        {job.applicationsCount} applications
+                      <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                        {job.status}
                       </span>
                     </div>
-                    <div className="text-sm font-medium text-green-600">
-                      {job.currency} {job.budget.toLocaleString()}
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                      {job.status}
-                    </span>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>

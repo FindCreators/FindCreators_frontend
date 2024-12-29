@@ -82,18 +82,20 @@ const CreatorDashboard = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 md:p-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Creator Dashboard</h1>
+    <div className="space-y-6 p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-center md:text-left">
+          Creator Dashboard
+        </h1>
         <button
           onClick={() => navigate("/creator/available-jobs")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto text-center"
         >
           Browse Jobs
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -109,7 +111,7 @@ const CreatorDashboard = () => {
                   <p className="text-sm font-medium text-gray-600">
                     {stat.label}
                   </p>
-                  <h3 className="text-2xl font-semibold text-gray-900">
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
                     {stat.value}
                   </h3>
                 </div>
@@ -120,13 +122,15 @@ const CreatorDashboard = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Active Applications</h2>
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-semibold">
+              Active Applications
+            </h2>
             {dashboardData.latestActiveListings.length > 0 && (
               <button
                 onClick={() => navigate("/creator/my-applications")}
-                className="text-blue-600 hover:text-blue-700 text-sm"
+                className="mt-2 sm:mt-0 text-blue-600 hover:text-blue-700 text-sm"
               >
                 View All →
               </button>
@@ -147,24 +151,26 @@ const CreatorDashboard = () => {
               {dashboardData.latestActiveListings.map((application) => (
                 <div
                   key={application.id}
-                  className="py-4 flex justify-between items-center"
+                  className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center"
                 >
-                  <div>
-                    <h3 className="font-medium">{application.title}</h3>
-                    <p className="text-sm text-gray-600">
+                  <div className="mb-3 sm:mb-0">
+                    <h3 className="font-medium text-sm sm:text-base">
+                      {application.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600">
                       {application.location.city},{" "}
                       {application.location.country}
                     </p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                    <span className="text-xs sm:text-sm text-gray-600">
                       Posted: {formatDate(application.createdAt)}
                     </span>
                     <span className="text-sm font-medium text-green-600">
                       {application.currency}{" "}
                       {application.budget.toLocaleString()}
                     </span>
-                    <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm bg-blue-100 text-blue-800">
                       {application.status}
                     </span>
                   </div>
