@@ -1,9 +1,6 @@
-// import axios from "axios";
 import { makeRequest } from "./apiHelpers";
 import { API_URLS } from "./apiUrls";
 import apiClient from "./apiClient";
-
-// const baseURL = "https://findcreators-450258334833.asia-south2.run.app";
 
 export const validateNewEmailorPhone = async ({
   entity,
@@ -116,7 +113,7 @@ export const uploadBrandLogo = async (formData) => {
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data", // Axios will handle this correctly
+          "Content-Type": "multipart/form-data",
         },
       }
     );
@@ -184,4 +181,3 @@ export const getUserToken = async () => {
   });
   return data;
 };
-

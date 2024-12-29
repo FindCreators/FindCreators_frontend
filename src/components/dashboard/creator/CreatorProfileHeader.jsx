@@ -6,7 +6,6 @@ import {
   BadgeCheck,
   Instagram,
   Youtube,
-  TikTok,
   Twitter,
   Globe,
 } from "lucide-react";

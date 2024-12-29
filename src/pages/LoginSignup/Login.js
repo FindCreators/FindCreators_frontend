@@ -5,7 +5,6 @@ import PhoneInput from "react-phone-number-input";
 import { useDispatch } from "react-redux";
 import "react-phone-number-input/style.css";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
 import { login } from "../../redux/actions/authActions";
 
 const Login = () => {
@@ -23,7 +22,6 @@ const Login = () => {
     handlePhoneNumberChange,
     sendOTP,
     verifyOTP,
-    resetForm,
     resendOTP,
   } = usePhoneAuth({
     onSuccess: async () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 const EditProfileModal = ({
@@ -9,6 +9,13 @@ const EditProfileModal = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState(initialData || {});
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData(initialData);
+    }
+  }, [isOpen, initialData]);
+  console.log("initialData", initialData);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,13 +60,18 @@ const EditProfileModal = ({
     }
 
     if (Object.keys(updatedFields).length > 0) {
-      onSave(updatedFields);
+      if (Object.keys(updatedFields).length > 0) {
+        onSave(updatedFields);
+      } else {
+        onSave(formData);
+      }
     } else {
       onClose();
     }
   };
 
-  // Rest of the component remains the same (renderFields function, etc.)
+  console.log("formData", formData);
+
   const renderFields = () => {
     switch (section) {
       case "basic":

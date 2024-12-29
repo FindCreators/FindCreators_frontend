@@ -1,4 +1,3 @@
-// src/pages/dashboard/brand/JobProposals.jsx
 import React, { useEffect, useState } from "react";
 import {
   Search,
@@ -43,7 +42,6 @@ const JobProposals = () => {
   const applicants = location.state?.applicants || [];
   const jobDetails = location.state?.jobDetails;
   const user = useSelector((state) => state.auth.user);
-  const userType = useSelector((state) => state.auth.userType);
 
   useEffect(() => {
     fetchProposals();
@@ -93,7 +91,6 @@ const JobProposals = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* Header with Job Details */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold mb-4">
           {jobDetails?.title || "View Proposals"}
@@ -107,8 +104,6 @@ const JobProposals = () => {
           <span>•</span>
           <span>{jobDetails?.duration}</span>
         </div>
-
-        {/* Progress Bar */}
         <div className="bg-gray-100 h-2 rounded-full mb-4">
           <div
             className="bg-green-600 h-2 rounded-full transition-all"
@@ -120,8 +115,6 @@ const JobProposals = () => {
           />
         </div>
       </div>
-
-      {/* Filters and Search */}
       <div className="flex gap-4 mb-6">
         <div className="flex-1">
           <div className="relative">
@@ -140,8 +133,6 @@ const JobProposals = () => {
           Filters
         </button>
       </div>
-
-      {/* Proposals List */}
       <div className="bg-white rounded-lg shadow-sm">
         {isLoading ? (
           Array(3)
@@ -203,7 +194,6 @@ const JobProposals = () => {
                   </div>
 
                   <p className="text-gray-600 mt-3">{proposal.bio}</p>
-
                   {proposal.skills?.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {proposal.skills.map((skill, index) => (
@@ -216,7 +206,6 @@ const JobProposals = () => {
                       ))}
                     </div>
                   )}
-
                   <div className="flex gap-4 mt-4 text-sm text-gray-600">
                     <span>Preferred Rate: ${proposal.preferredRate}/hr</span>
                     <span>•</span>

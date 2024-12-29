@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from "react";
 import {
-  Building2,
   Globe,
-  Users,
   Briefcase,
-  Star,
   Mail,
   Phone,
   Edit2,
-  LinkIcon,
   Award,
   TrendingUp,
   DollarSign,
   UserCheck,
 } from "lucide-react";
 import { Facebook, Twitter, Instagram, Link as LinkedIn } from "lucide-react";
-
 import toast from "react-hot-toast";
 import {
   getBrandProfile,
@@ -68,32 +63,20 @@ const BrandProfile = () => {
         "socialHandles",
         "hiringBudget",
       ];
-
-      // Log the keys in the data object
-      console.log("Data keys:", Object.keys(data));
-
-      // Filter the data to only include valid keys
       const filteredData = Object.keys(data).reduce((acc, key) => {
         if (validKeys.includes(key)) {
           acc[key] = data[key];
         }
         return acc;
       }, {});
-
-      console.log("Filtered data:", filteredData);
-
-      // Transform the filteredData object into an array of key-value objects
       const transformedData = Object.keys(filteredData).map((key) => ({
         key,
         value: filteredData[key],
       }));
-
-      console.log("Transformed data:", transformedData);
-
-      const updatedProfile = await updateBrandProfile(transformedData);
-      setProfile(updatedProfile);
+      await updateBrandProfile(transformedData);
       toast.success("Profile updated successfully");
       setActiveModal(null);
+      await fetchProfile();
     } catch (error) {
       toast.error("Failed to update profile");
       console.error("Profile update error:", error);
@@ -103,9 +86,7 @@ const BrandProfile = () => {
   const handleImageUpload = async (type, file) => {
     try {
       const formData = new FormData();
-      formData.append("image", file); // Ensure the key matches the Postman configuration
-
-      // Log FormData contents for debugging
+      formData.append("image", file);
       for (let [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
       }
@@ -115,15 +96,8 @@ const BrandProfile = () => {
         console.log("Uploading logo with formData:", formData);
         response = await uploadBrandLogo(formData);
       }
-      // else if (type === "cover") {
-      //     response = await uploadCoverImage(formData);
-      // }
-      console.log("Response:", response);
-
       if (response?.data) {
-        // Update the profile with the new image URL
-        const updatedData = { [type]: response.data.url }; // Assuming the API returns the uploaded URL
-        // await handleUpdateProfile(updatedData); // Update the profile data with the new image URL
+        const updatedData = { [type]: response.data.url };
         toast.success(
           `${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`
         );
@@ -160,12 +134,9 @@ const BrandProfile = () => {
         onUploadCover={(file) => handleImageUpload("cover", file)}
         onUploadLogo={(file) => handleImageUpload("logo", file)}
       />
-
       <div className="max-w-7xl mx-auto px-4 -mt-8 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Main Content - Left Side */}
           <div className="md:col-span-2 space-y-6">
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14">
               {[
                 {
@@ -223,8 +194,6 @@ const BrandProfile = () => {
                 </div>
               ))}
             </div>
-
-            {/* About Section */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">About</h2>
@@ -247,8 +216,6 @@ const BrandProfile = () => {
                 )}
               </p>
             </div>
-
-            {/* Recent Activity */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
               <div className="space-y-6">
@@ -286,16 +253,17 @@ const BrandProfile = () => {
               </div>
             </div>
           </div>
-
-          {/* Sidebar - Right Side */}
           <div className="space-y-6 mt-14">
-            {/* Contact Information */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Contact Information</h2>
                 <button
                   onClick={() => {
-                    setModalData(profile);
+                    setModalData({
+                      email: profile?.email || "",
+                      phone: profile?.phone || "",
+                      website: profile?.website || "",
+                    });
                     setActiveModal("contact");
                   }}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -397,8 +365,6 @@ const BrandProfile = () => {
           </div>
         </div>
       </div>
-
-      {/* Edit Modals */}
       <EditProfileModal
         isOpen={!!activeModal}
         onClose={() => {

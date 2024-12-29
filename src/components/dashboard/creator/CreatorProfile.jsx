@@ -1,29 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import {
-  Camera,
-  MapPin,
-  Briefcase,
-  Star,
-  Mail,
-  Phone,
-  Edit2,
-  BadgeCheck,
-  Globe,
-  DollarSign,
-  Heart,
-  Instagram,
-  Twitter,
-  Youtube,
-  Facebook,
-} from "lucide-react";
 import CreatorProfileHeader from "./CreatorProfileHeader";
 import EditProfileModal from "./EditProfileModal";
 import AboutSection from "./sections/AboutSection";
 import PortfolioSection from "./sections/PortfolioSection";
 import StatsSection from "./sections/StatsSection";
 import ReviewsSection from "./sections/ReviewsSection";
-import { makeRequest } from "../../../network/apiHelpers";
 import {
   getCreatorProfile,
   updateCreatorProfile,

@@ -6,7 +6,6 @@ import {
   CalendarIcon,
   GlobeAltIcon,
   PencilIcon,
-  CurrencyDollarIcon,
   ClipboardListIcon,
 } from "@heroicons/react/outline";
 

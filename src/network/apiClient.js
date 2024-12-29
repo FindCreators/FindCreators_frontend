@@ -21,7 +21,6 @@ apiClient.interceptors.request.use(
           }
           config.headers["x-access-token"] = cleanedToken;
         }
-        // Only set Content-Type to application/json if it's not already set
         if (!config.headers["Content-Type"]) {
           config.headers["Content-Type"] = "application/json";
         }

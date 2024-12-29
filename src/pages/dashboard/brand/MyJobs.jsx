@@ -87,14 +87,12 @@ const MyJobs = () => {
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     return `${Math.floor(diffDays / 30)} months ago`;
   };
-
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
@@ -108,7 +106,6 @@ const MyJobs = () => {
           </button>
         </div>
       </div>
-
       <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
         {jobStatuses.map((status) => (
           <button
@@ -203,7 +200,6 @@ const MyJobs = () => {
           ))}
         </div>
       )}
-
       {pagination.totalPages > 1 && (
         <div className="mt-6 flex justify-center gap-2">
           {[...Array(pagination.totalPages)].map((_, i) => (

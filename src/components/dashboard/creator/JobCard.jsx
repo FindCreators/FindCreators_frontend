@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Calendar,
-  MapPin,
-  DollarSign,
-  Users,
-  Clock,
-  Briefcase,
-} from "lucide-react";
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
 
 const JobCard = ({ job, onApply, isApplied }) => {
   const formatDate = (dateString) => {

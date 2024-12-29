@@ -5,7 +5,6 @@ const AboutSection = ({ profile }) => {
   console.log(profile);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Main Info */}
       <div className="md:col-span-2 space-y-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Bio</h2>
@@ -13,7 +12,6 @@ const AboutSection = ({ profile }) => {
             {profile?.bio || "No bio provided yet."}
           </p>
         </div>
-
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Skills & Expertise</h2>
           <div className="flex flex-wrap gap-2">
@@ -27,7 +25,6 @@ const AboutSection = ({ profile }) => {
             )) || "No skills listed yet."}
           </div>
         </div>
-
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Languages</h2>
           <div className="flex flex-wrap gap-4">
@@ -40,8 +37,6 @@ const AboutSection = ({ profile }) => {
           </div>
         </div>
       </div>
-
-      {/* Sidebar */}
       <div className="space-y-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
@@ -73,7 +68,6 @@ const AboutSection = ({ profile }) => {
             )}
           </div>
         </div>
-
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">
             Collaboration Preferences
