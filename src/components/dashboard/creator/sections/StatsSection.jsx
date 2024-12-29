@@ -1,36 +1,48 @@
 import React from "react";
-import { Bar, Line } from "recharts";
+import { TrendingUp, Users, DollarSign, Award } from "lucide-react";
 
 const StatsSection = ({ profile }) => {
-  const engagementData = [
-    { month: "Jan", rate: 4.2 },
-    { month: "Feb", rate: 4.8 },
-    { month: "Mar", rate: 5.1 },
-    { month: "Apr", rate: 4.9 },
-    { month: "May", rate: 5.3 },
-    { month: "Jun", rate: 5.7 },
+  const stats = [
+    {
+      icon: Users,
+      label: "Followers",
+      value: profile?.followers || 0,
+    },
+    {
+      icon: TrendingUp,
+      label: "Engagement Rate",
+      value: `${profile?.engagementRate || 0}%`,
+    },
+    {
+      icon: DollarSign,
+      label: "Total Earnings",
+      value: `${profile?.currency} ${profile?.totalEarnings || 0}`,
+    },
+    {
+      icon: Award,
+      label: "Awards",
+      value: profile?.awards || 0,
+    },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h3 className="text-lg font-medium mb-2">Engagement Rate</h3>
-          <div className="text-3xl font-bold text-blue-600">
-            {profile?.engagementRate}%
-          </div>
-          <div className="mt-4 h-40">
-            <Line
-              data={engagementData}
-              margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-            >
-              {/* Add Line chart configuration */}
-            </Line>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {stats.map((stat, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <stat.icon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold">{stat.value}</h3>
+              <p className="text-gray-600">{stat.label}</p>
+            </div>
           </div>
         </div>
-
-        {/* Add more stat cards */}
-      </div>
+      ))}
     </div>
   );
 };

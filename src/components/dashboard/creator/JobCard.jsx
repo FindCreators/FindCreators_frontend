@@ -1,4 +1,3 @@
-// components/dashboard/creator/JobCard.jsx
 import React from "react";
 import {
   Calendar,
@@ -28,9 +27,9 @@ const JobCard = ({ job, onApply, isApplied }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
       <div className="p-6">
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col md:flex-row justify-between items-start">
           {/* Title and Category */}
-          <div className="flex-1">
+          <div className="flex-1 mb-4 md:mb-0">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-xl font-semibold text-gray-900">
                 {job.title}
@@ -51,7 +50,7 @@ const JobCard = ({ job, onApply, isApplied }) => {
           </div>
 
           {/* Budget */}
-          <div className="text-right">
+          <div className="text-right md:text-left">
             <div className="text-2xl font-bold text-gray-900">
               {job.currency} {job.budget}
             </div>
@@ -77,7 +76,7 @@ const JobCard = ({ job, onApply, isApplied }) => {
         )}
 
         {/* Info Grid */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t">
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pt-6 border-t">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-600">
@@ -106,8 +105,8 @@ const JobCard = ({ job, onApply, isApplied }) => {
       </div>
 
       {/* Action Footer */}
-      <div className="px-6 py-4 bg-gray-50 flex justify-between items-center">
-        <div className="flex gap-4">
+      <div className="px-6 py-4 bg-gray-50 flex flex-col sm:flex-row justify-between items-center">
+        <div className="flex flex-wrap gap-4 mb-4 sm:mb-0">
           {job.tags?.map((tag, index) => (
             <span key={index} className="text-sm text-gray-500">
               #{tag}
@@ -117,7 +116,7 @@ const JobCard = ({ job, onApply, isApplied }) => {
         <button
           onClick={() => onApply(job.id)}
           disabled={isApplied}
-          className={`px-6 py-2 rounded-lg transition-all duration-200 ${
+          className={`px-6 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
             isApplied
               ? "bg-gray-100 text-gray-500 cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-700"

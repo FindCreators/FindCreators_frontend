@@ -149,7 +149,7 @@ const Login = () => {
                     defaultCountry="IN"
                     value={phoneNumber}
                     onChange={handlePhoneNumberChange}
-                    className="w-full px-4 py-3 rounded-r-lg focus:outline-none"
+                    className="*:outline-none w-full px-4 py-3 rounded-r-lg focus:outline-none"
                   />
                 </div>
               </div>

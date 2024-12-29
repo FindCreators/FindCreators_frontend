@@ -29,13 +29,10 @@ import AvailableJobs from "./pages/dashboard/creator/AvailableJobs";
 import ApplicationTracker from "./components/dashboard/creator/ApplicationTracker";
 import MyChat from "./pages/chat/MyChat";
 
-
 function AppContent() {
   const location = useLocation();
-   
 
   // Fetch user token and initialize Stream Chat user
- 
 
   return (
     <>
@@ -68,12 +65,7 @@ function AppContent() {
         </Route>
 
         {/* Stream Chat Route */}
-        <Route
-          path="/chat"
-          element={
-            <MyChat/>
-          }
-        />
+        <Route path="/chat" element={<MyChat />} />
       </Routes>
     </>
   );

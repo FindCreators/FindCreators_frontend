@@ -35,10 +35,10 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const logout = () => {
+export const logout = () => {
   const itemsToClear = ["token", "number", "userState", "logintype", "email"];
   itemsToClear.forEach((item) => localStorage.removeItem(item));
-  toast.error("Session expired. Please login again.");
+  toast.success("Logged out successfully");
 };
 
 apiClient.interceptors.response.use(

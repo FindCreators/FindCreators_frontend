@@ -61,8 +61,8 @@ const CreatorDashboardLayout = () => {
         </div>
       </header>
 
-      <div className="flex pt-[57px]">
-        <aside className="fixed left-0 w-64 h-[calc(100vh-57px)] bg-white border-r border-gray-200 overflow-y-auto">
+      <div className="flex pt-[57px] md:flex-row flex-col">
+        <aside className="w-full md:w-64 md:h-[calc(100vh-57px)] bg-white border-r border-gray-200 overflow-y-auto md:fixed md:left-0">
           <div className="px-4 py-6">
             <div className="flex items-center mb-8">
               <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -94,7 +94,7 @@ const CreatorDashboardLayout = () => {
             </nav>
           </div>
         </aside>
-        <main className="flex-1 ml-64 p-8">
+        <main className="flex-1 p-8 md:ml-64 md:p-8">
           <Outlet />
         </main>
       </div>

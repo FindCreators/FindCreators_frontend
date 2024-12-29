@@ -82,7 +82,7 @@ const CreatorDashboard = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 md:p-8">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Creator Dashboard</h1>
         <button

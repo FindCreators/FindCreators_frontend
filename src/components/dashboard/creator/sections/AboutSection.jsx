@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Mail, Phone, Globe, Award, Calendar } from "lucide-react";
+import { MapPin, Mail, Phone, Globe } from "lucide-react";
 
 const AboutSection = ({ profile }) => {
   console.log(profile);

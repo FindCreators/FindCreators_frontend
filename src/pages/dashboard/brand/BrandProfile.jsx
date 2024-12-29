@@ -24,6 +24,8 @@ import {
 } from "../../../network/networkCalls";
 import BrandProfileHeader from "../../../components/dashboard/brand/BrandProfileHeader";
 import EditProfileModal from "../../../components/dashboard/brand/EditProfileModal";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../../network/apiClient";
 
 const BrandProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -31,6 +33,7 @@ const BrandProfile = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [modalData, setModalData] = useState(null);
   const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfile();
@@ -48,6 +51,7 @@ const BrandProfile = () => {
       setIsLoading(false);
     }
   };
+
   const handleUpdateProfile = async (data) => {
     try {
       const validKeys = [
@@ -78,7 +82,15 @@ const BrandProfile = () => {
 
       console.log("Filtered data:", filteredData);
 
-      const updatedProfile = await updateBrandProfile(filteredData);
+      // Transform the filteredData object into an array of key-value objects
+      const transformedData = Object.keys(filteredData).map((key) => ({
+        key,
+        value: filteredData[key],
+      }));
+
+      console.log("Transformed data:", transformedData);
+
+      const updatedProfile = await updateBrandProfile(transformedData);
       setProfile(updatedProfile);
       toast.success("Profile updated successfully");
       setActiveModal(null);
@@ -87,6 +99,7 @@ const BrandProfile = () => {
       console.error("Profile update error:", error);
     }
   };
+
   const handleImageUpload = async (type, file) => {
     try {
       const formData = new FormData();
@@ -119,6 +132,10 @@ const BrandProfile = () => {
       toast.error(`Failed to update ${type}`);
       console.error("Image upload error:", error);
     }
+  };
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   if (isLoading) {
@@ -296,20 +313,34 @@ const BrandProfile = () => {
                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
                       <item.icon className="w-5 h-5 text-gray-600" />
                     </div>
-                    <div>
+                    <div
+                      className={`flex flex-col ${
+                        item.label === "Website" ? "items-start" : ""
+                      }`}
+                    >
                       <label className="text-sm text-gray-500">
                         {item.label}
                       </label>
-                      <p className="text-gray-900">
-                        {item.value || "Not provided"}
-                      </p>
+                      {item.label === "Website" && item.value ? (
+                        <a
+                          href={item.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {item.value}
+                        </a>
+                      ) : (
+                        <p className="text-gray-900">
+                          {item.value || "Not provided"}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Social Media Links */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Social Media</h2>
@@ -378,6 +409,14 @@ const BrandProfile = () => {
         initialData={modalData}
         onSave={handleUpdateProfile}
       />
+      <div className="fixed bottom-4 right-4">
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 };

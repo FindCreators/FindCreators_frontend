@@ -29,7 +29,7 @@ const DashboardLayout = ({ userType }) => {
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center space-x-3">
             <a
-              href="/creator"
+              href="/brand"
               className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
             >
               FindCreators
@@ -55,9 +55,9 @@ const DashboardLayout = ({ userType }) => {
         </div>
       </header>
 
-      <div className="flex pt-[57px]">
+      <div className="flex flex-col md:flex-row pt-[57px]">
         {/* Sidebar */}
-        <aside className="fixed left-0 w-64 h-[calc(100vh-57px)] bg-white border-r border-gray-200 overflow-y-auto">
+        <aside className="w-full md:w-64 md:h-[calc(100vh-57px)] bg-white border-r border-gray-200 overflow-y-auto md:fixed md:left-0">
           <div className="px-4 py-6">
             <div className="flex items-center mb-8">
               <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -91,7 +91,7 @@ const DashboardLayout = ({ userType }) => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-64 p-8">
+        <main className="flex-1 p-4 md:ml-64 md:p-8">
           <Outlet />
         </main>
       </div>

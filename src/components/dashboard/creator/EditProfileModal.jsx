@@ -76,9 +76,94 @@ const EditProfileModal = ({ isOpen, onClose, section, profile, onSave }) => {
             </div>
           </>
         );
-
-      // Add more sections as needed
-
+      case "about":
+        return (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={formData.description || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              rows={6}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Detailed description about yourself..."
+            />
+          </div>
+        );
+      case "portfolio":
+        return (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Portfolio URL
+            </label>
+            <input
+              type="url"
+              value={formData.portfolioUrl || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, portfolioUrl: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        );
+      case "stats":
+        return (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Followers
+            </label>
+            <input
+              type="number"
+              value={formData.followers || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, followers: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+              Review Count
+            </label>
+            <input
+              type="number"
+              value={formData.reviewCount || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, reviewCount: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+              Engagement Rate
+            </label>
+            <input
+              type="number"
+              value={formData.engagementRate || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, engagementRate: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        );
+      case "reviews":
+        return (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Reviews
+            </label>
+            <textarea
+              value={formData.reviews || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, reviews: e.target.value })
+              }
+              rows={6}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Add your reviews here..."
+            />
+          </div>
+        );
       default:
         return null;
     }
