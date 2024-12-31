@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import JobCard from "../../../components/dashboard/creator/JobCard";
 import { getListings, applyToJob } from "../../../network/networkCalls";
 import Pagination from "../../../components/dashboard/creator/Pagination";
+import ApplyJobModal from "../../../components/dashboard/creator/ApplyJobModal";
 
 const AvailableJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -16,6 +17,8 @@ const AvailableJobs = () => {
     budget: null,
     duration: [],
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState(null);
 
   const categories = [
     "Tech",
@@ -55,9 +58,9 @@ const AvailableJobs = () => {
     }
   };
 
-  const handleApply = async (jobId) => {
+  const handleApply = async (jobId, quotedPrice, message) => {
     try {
-      await applyToJob(jobId);
+      await applyToJob(jobId, quotedPrice, message);
       toast.success("Application submitted successfully");
       fetchJobs();
     } catch (error) {
@@ -79,6 +82,16 @@ const AvailableJobs = () => {
       budget: null,
       duration: [],
     });
+  };
+
+  const openModal = (jobId) => {
+    setSelectedJobId(jobId);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedJobId(null);
   };
 
   return (
@@ -248,7 +261,7 @@ const AvailableJobs = () => {
               <JobCard
                 key={job.id}
                 job={job}
-                onApply={handleApply}
+                onApply={() => openModal(job.id)}
                 isApplied={job.applicants?.includes(
                   localStorage.getItem("userId")
                 )}
@@ -257,8 +270,12 @@ const AvailableJobs = () => {
           </div>
         )}
       </div>
-
-      {/* Jobs List */}
+      <ApplyJobModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onApply={handleApply}
+        jobId={selectedJobId}
+      />
     </div>
   );
 };

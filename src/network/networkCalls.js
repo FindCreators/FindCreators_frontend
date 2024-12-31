@@ -140,24 +140,23 @@ export const getListings = async (filters = {}) => {
   return data;
 };
 
-export const applyToJob = async (listingId) => {
+export const applyToJob = async (listingId, quotedPrice, message) => {
   const data = await makeRequest({
     method: "PATCH",
     url: API_URLS.APPLY_TO_LISTING,
-    data: { listingId },
+    data: { listingId, quotedPrice: parseInt(quotedPrice, 10), message },
   });
   return data;
 };
 
-export const getCreatorsByIdArray = async (ids) => {
+export const getCreatorsByIdArray = async (ids, listingId) => {
   const data = await makeRequest({
     method: "POST",
-    url: "/api/creators-by-id-array",
-    data: { ids },
+    url: API_URLS.CREATORS_BY_ID_ARRAY,
+    data: { ids, listingId },
   });
   return data;
 };
-
 export const updateCreatorProfile = async (profileData) => {
   try {
     const response = await makeRequest({
@@ -178,6 +177,19 @@ export const updateCreatorProfile = async (profileData) => {
 export const getUserToken = async () => {
   const data = await makeRequest({
     url: API_URLS.GET_CHAT_TOKEN,
+  });
+  return data;
+};
+export const createOffer = async (
+  applicationId,
+  amount,
+  details,
+  attachments
+) => {
+  const data = await makeRequest({
+    method: "POST",
+    url: API_URLS.CREATE_OFFER,
+    data: { applicationId, amount, details, attachments },
   });
   return data;
 };

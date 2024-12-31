@@ -73,8 +73,11 @@ const MyJobs = () => {
     fetchJobs();
   }, [pagination.page, filters]);
 
-  const handleViewProposals = (jobId, applicants) => {
-    navigate(`/brand/jobs/${jobId}/proposals`, { state: { applicants } });
+  const handleViewProposals = (jobId, applicants, jobDetails) => {
+    console.log(applicants, jobDetails);
+    navigate(`/brand/jobs/${jobId}/proposals`, {
+      state: { applicants, jobDetails },
+    });
   };
 
   const handleStatusChange = (statusId) => {
@@ -93,6 +96,7 @@ const MyJobs = () => {
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     return `${Math.floor(diffDays / 30)} months ago`;
   };
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
@@ -175,7 +179,9 @@ const MyJobs = () => {
                 <div className="flex items-center gap-4">
                   <button
                     className="text-green-600 hover:text-green-700 font-medium transition-colors"
-                    onClick={() => handleViewProposals(job.id, job.applicants)}
+                    onClick={() =>
+                      handleViewProposals(job.id, job.applicants, job)
+                    }
                   >
                     View proposals
                   </button>

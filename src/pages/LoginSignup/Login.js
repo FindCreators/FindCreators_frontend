@@ -231,6 +231,7 @@ const Login = () => {
               {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
             </button>
           </div>
+          <div id="recaptcha-container"></div>
         </div>
       </div>
     </div>

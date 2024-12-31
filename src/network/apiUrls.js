@@ -11,5 +11,7 @@ export const API_URLS = {
   UPLOAD_BRAND_LOGO: "/api/update-profile-image",
   GET_LISTINGS: "/api/listings",
   APPLY_TO_LISTING: "/api/apply-to-listing",
-  GET_CHAT_TOKEN:"/api/chat-token-details"
+  GET_CHAT_TOKEN: "/api/chat-token-details",
+  CREATORS_BY_ID_ARRAY: "/api/creators-by-id-array",
+  CREATE_OFFER: "/api/offer-create",
 };
