@@ -1,7 +1,11 @@
+// src/components/dashboard/creator/JobCard.jsx
 import React from "react";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const JobCard = ({ job, onApply, isApplied }) => {
+const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
+  const navigate = useNavigate();
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -18,7 +22,10 @@ const JobCard = ({ job, onApply, isApplied }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div
+      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+      onClick={() => onViewDetails(job)}
+    >
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start">
           {/* Title and Category */}
@@ -101,7 +108,10 @@ const JobCard = ({ job, onApply, isApplied }) => {
           ))}
         </div>
         <button
-          onClick={() => onApply(job.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onApply(job.id);
+          }}
           disabled={isApplied}
           className={`px-6 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
             isApplied

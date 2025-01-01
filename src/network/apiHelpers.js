@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import multipartapiClient from "./multipartapiclient";
 
 const makeRequest = async ({
   method = "get",
@@ -26,4 +27,28 @@ const makeRequest = async ({
   }
 };
 
-export { makeRequest };
+const multipartMakeRequest = async ({
+  method = "post",
+  url,
+  data = {},
+  params = {},
+  cancelToken = null,
+  headers = {},
+} = {}) => {
+  try {
+    const response = await multipartapiClient({
+      method,
+      url,
+      data,
+      params,
+      cancelToken,
+      headers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`API Error (${url}):`, error);
+    throw error;
+  }
+};
+
+export { makeRequest, multipartMakeRequest };

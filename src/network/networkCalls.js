@@ -1,6 +1,7 @@
-import { makeRequest } from "./apiHelpers";
+import { makeRequest, multipartMakeRequest } from "./apiHelpers";
 import { API_URLS } from "./apiUrls";
-import apiClient from "./apiClient";
+import apiClient, { BASE_URL } from "./apiClient";
+import axios from "axios";
 
 export const validateNewEmailorPhone = async ({
   entity,
@@ -43,6 +44,9 @@ export const createJobListing = async (jobData) => {
     method: "post",
     url: API_URLS.POST_JOB_LISTING,
     data: jobData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
   return data;
 };
@@ -108,12 +112,13 @@ export const updateBrandProfile = async (profileData) => {
 
 export const uploadBrandLogo = async (formData) => {
   try {
-    const response = await apiClient.patch(
-      API_URLS.UPLOAD_BRAND_LOGO,
+    const response = await axios.patch(
+      "https://findcreators-537037621947.asia-south2.run.app/api/update-profile-image",
       formData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
+          "x-access-token": `${localStorage.getItem("token")}`,
         },
       }
     );
@@ -180,16 +185,36 @@ export const getUserToken = async () => {
   });
   return data;
 };
+
 export const createOffer = async (
-  applicationId,
+  listingId,
+  creatorId,
   amount,
   details,
-  attachments
+  attachments,
+  contractTitle
 ) => {
-  const data = await makeRequest({
-    method: "POST",
-    url: API_URLS.CREATE_OFFER,
-    data: { applicationId, amount, details, attachments },
-  });
-  return data;
+  const formData = new FormData();
+  formData.append("listingId", listingId);
+  formData.append("creatorId", creatorId);
+  formData.append("amount", amount);
+  formData.append("details", details);
+  formData.append("paymentoptions", "fixed_price");
+  formData.append("contractTitle", contractTitle);
+  formData.append("paymentScheduleType", "whole");
+  if (attachments) {
+    formData.append("attachments", attachments);
+  }
+  const response = await fetch(
+    "https://findcreators-537037621947.asia-south2.run.app/api/offer-create",
+    {
+      method: "POST",
+      headers: {
+        "x-access-token": `${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    }
+  );
+
+  return response.data;
 };

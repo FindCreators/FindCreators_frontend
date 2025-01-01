@@ -1,4 +1,6 @@
+// src/components/dashboard/brand/steps/JobDetailsStep.jsx
 import React, { useState, useEffect } from "react";
+import { MapPin, Calendar, Tag } from "lucide-react";
 
 const JobDetailsStep = ({ formData, handleInputChange }) => {
   // Local state for form fields to prevent focus issues
@@ -11,6 +13,8 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
       country: formData.location.country,
       city: formData.location.city,
     },
+    attachment: formData.attachment,
+    attachmentLink: formData.attachmentLink,
   });
 
   // Update local state when prop changes
@@ -24,6 +28,8 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         country: formData.location.country,
         city: formData.location.city,
       },
+      attachment: formData.attachment,
+      attachmentLink: formData.attachmentLink,
     });
   }, [formData]);
 
@@ -203,6 +209,40 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Attachment
+          </label>
+          <input
+            type="file"
+            name="attachment"
+            onChange={(e) => {
+              handleLocalChange({
+                target: {
+                  name: "attachment",
+                  value: e.target.files[0],
+                },
+              });
+            }}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Attachment Link
+          </label>
+          <input
+            type="text"
+            name="attachmentLink"
+            value={localFormData.attachmentLink}
+            onChange={handleLocalChange}
+            onBlur={handleBlur}
+            placeholder="Enter attachment link"
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
       </div>
     </div>

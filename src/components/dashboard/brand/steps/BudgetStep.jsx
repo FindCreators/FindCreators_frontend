@@ -57,26 +57,6 @@ const BudgetStep = ({ formData, handleInputChange }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Currency
-          </label>
-          <select
-            name="currency"
-            value={localFormData.currency}
-            onChange={(e) => {
-              handleLocalChange(e);
-              handleBlur(e);
-            }}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="INR">INR</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
             Duration
           </label>
           <input

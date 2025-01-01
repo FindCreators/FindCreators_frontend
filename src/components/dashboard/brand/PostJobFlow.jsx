@@ -9,6 +9,7 @@ import AIPromptStep from "./steps/AIPromptStep";
 import ProjectTypeStep from "./steps/ProjectTypeStep";
 import JobDetailsStep from "./steps/JobDetailsStep";
 import BudgetStep from "./steps/BudgetStep";
+import JobPreview from "./steps/JobPreview";
 import { createJobListing } from "../../../network/networkCalls";
 
 const PostJobFlow = () => {
@@ -25,7 +26,7 @@ const PostJobFlow = () => {
     category: "",
     skills: [],
     budget: 0,
-    currency: "USD",
+    currency: "INR",
     duration: "",
     location: {
       city: "",
@@ -35,6 +36,7 @@ const PostJobFlow = () => {
     startDate: "",
     endDate: "",
     attachments: [],
+    attachmentLink: "",
     tags: [],
   });
 
@@ -134,15 +136,12 @@ const PostJobFlow = () => {
     try {
       if (!validateForm()) return;
 
-      const jobData = {
+      const jobData = formatDates({
         ...formData,
         budget: Number(formData.budget), // Ensure budget is a number
-      };
+      });
 
-      // Format dates and provide defaults if not set
-      const formattedData = formatDates(jobData);
-
-      const response = await createJobListing(formattedData);
+      await createJobListing(jobData);
       toast.success("Job posted successfully!");
       navigate("/brand/jobs");
     } catch (error) {
@@ -176,6 +175,13 @@ const PostJobFlow = () => {
     ),
     () => (
       <BudgetStep formData={formData} handleInputChange={handleInputChange} />
+    ),
+    () => (
+      <JobPreview
+        formData={formData}
+        setStep={setStep}
+        handleSubmit={handleSubmit}
+      />
     ),
   ];
 

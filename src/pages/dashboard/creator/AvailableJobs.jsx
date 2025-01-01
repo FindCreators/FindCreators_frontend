@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import JobCard from "../../../components/dashboard/creator/JobCard";
 import { getListings, applyToJob } from "../../../network/networkCalls";
+import { useNavigate } from "react-router-dom";
 import Pagination from "../../../components/dashboard/creator/Pagination";
 import ApplyJobModal from "../../../components/dashboard/creator/ApplyJobModal";
 
@@ -19,6 +20,7 @@ const AvailableJobs = () => {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState(null);
+  const navigate = useNavigate();
 
   const categories = [
     "Tech",
@@ -92,6 +94,10 @@ const AvailableJobs = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedJobId(null);
+  };
+
+  const viewJobDetails = (job) => {
+    navigate(`/creator/available-jobs/${job.id}`, { state: { job } });
   };
 
   return (
@@ -262,6 +268,7 @@ const AvailableJobs = () => {
                 key={job.id}
                 job={job}
                 onApply={() => openModal(job.id)}
+                onViewDetails={viewJobDetails}
                 isApplied={job.applicants?.includes(
                   localStorage.getItem("userId")
                 )}

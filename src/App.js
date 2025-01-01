@@ -21,6 +21,7 @@ import ApplicationTracker from "./components/dashboard/creator/ApplicationTracke
 import MyChat from "./pages/chat/MyChat";
 import EditJob from "./pages/dashboard/brand/EditJob";
 import SendOffer from "./pages/dashboard/brand/SendOffer";
+import JobDetails from "./pages/dashboard/creator/JobDetails";
 
 function AppContent() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function AppContent() {
           <Route index element={<CreatorDashboard />} />
           <Route path="profile" element={<CreatorProfile />} />
           <Route path="available-jobs" element={<AvailableJobs />} />
+          <Route path="/creator/available-jobs/:id" element={<JobDetails />} />
           <Route path="my-applications" element={<ApplicationTracker />} />
         </Route>
         <Route path="/chat" element={<MyChat />} />

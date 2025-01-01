@@ -29,7 +29,7 @@ const Hero = () => {
     savedJobs: null,
     minimumRate: 0,
     preferredRate: 0,
-    currency: "USD",
+    currency: "INR",
     collabPreferences: null,
     rating: 4.2,
     reviewCount: 0,
@@ -55,10 +55,10 @@ const Hero = () => {
         </div>
       </div>
       <div class="mt-16 flex flex-col items-center">
-        <h4 class="text-xl font-bold text-navy-700 ">
-          {creator.fullName}
-        </h4>
-        <p class="text-base text-center font-normal text-gray-600">{creator.bio}</p>
+        <h4 class="text-xl font-bold text-navy-700 ">{creator.fullName}</h4>
+        <p class="text-base text-center font-normal text-gray-600">
+          {creator.bio}
+        </p>
       </div>
       <div class="mt-6 mb-3 flex gap-14 md:!gap-14">
         <div class="flex flex-col items-center justify-center">
@@ -66,7 +66,9 @@ const Hero = () => {
           <p class="text-sm font-normal text-gray-600">Rating</p>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <p class="text-2xl font-bold text-navy-700 ">{followerConverter(creator.followers)}</p>
+          <p class="text-2xl font-bold text-navy-700 ">
+            {followerConverter(creator.followers)}
+          </p>
           <p class="text-sm font-normal text-gray-600">Followers</p>
         </div>
         <div class="flex flex-col items-center justify-center">

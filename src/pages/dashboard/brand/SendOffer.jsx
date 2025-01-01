@@ -8,19 +8,20 @@ const SendOffer = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { proposal, jobDetails } = location.state;
-  console.log(proposal, jobDetails);
   const [amount, setAmount] = useState(proposal.quotedPrice);
   const [details, setDetails] = useState(
-    `This is the offer from ${jobDetails.description}`
+    `This is the offer from ${jobDetails.title}`
   );
   const [attachments, setAttachments] = useState(null);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [dueDate, setDueDate] = useState(jobDetails.deadline);
 
+  // Extract creatorId from the applications array
+  const creatorId = jobDetails.applications[0]?.creatorId;
+
   useEffect(() => {
-    console.log(jobDetails);
     if (jobDetails) {
-      setDetails(`This is the offer from ${jobDetails.description}`);
+      setDetails(`This is the offer from ${jobDetails.title}`);
       setDueDate(jobDetails.deadline);
     }
   }, [jobDetails]);
@@ -33,7 +34,14 @@ const SendOffer = () => {
     }
 
     try {
-      await createOffer(proposal.applicationId, amount, details, attachments);
+      await createOffer(
+        jobDetails.id,
+        creatorId,
+        amount,
+        details,
+        attachments,
+        jobDetails.title
+      );
       toast.success("Offer created successfully");
       navigate("/brand/jobs");
     } catch (error) {
