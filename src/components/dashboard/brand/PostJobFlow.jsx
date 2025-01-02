@@ -141,7 +141,25 @@ const PostJobFlow = () => {
         budget: Number(formData.budget), // Ensure budget is a number
       });
 
-      await createJobListing(jobData);
+      const formPayload = new FormData();
+
+      // Add simple fields to FormData
+      for (const [key, value] of Object.entries(jobData)) {
+        if (key === "location") {
+          formPayload.append("location.country", value.country);
+          formPayload.append("location.city", value.city || "");
+        } else if (key === "skills" || key === "tags") {
+          formPayload.append(key, value.join(","));
+        } else if (key === "attachments") {
+          value.forEach((file) => {
+            formPayload.append("attachments", file);
+          });
+        } else {
+          formPayload.append(key, value);
+        }
+      }
+
+      await createJobListing(formPayload);
       toast.success("Job posted successfully!");
       navigate("/brand/jobs");
     } catch (error) {
