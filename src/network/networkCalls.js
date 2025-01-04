@@ -15,14 +15,27 @@ export const validateNewEmailorPhone = async ({
   });
   return data;
 };
+
 export const loginUser = async (phone) => {
-  const data = await makeRequest({
-    url: API_URLS.GET_LOGIN_USER + `phone=${phone}`,
-  });
-  console.log(data);
-  localStorage.setItem("token", data.jwt);
-  localStorage.setItem("profile", JSON.stringify(data.profile));
-  return data;
+  try {
+    const data = await makeRequest({
+      url: API_URLS.GET_LOGIN_USER + `phone=${phone}`,
+    });
+
+    if (!data || !data.profile || !data.jwt) {
+      throw new Error("Invalid response from server");
+    }
+
+    localStorage.setItem("token", data.jwt);
+    localStorage.setItem("profile", JSON.stringify(data.profile));
+    localStorage.setItem("userType", data.profile.type);
+    localStorage.setItem("userId", data.profile.id);
+
+    return data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 };
 
 export const createUser = async (entity, profile) => {
@@ -199,22 +212,26 @@ export const createOffer = async (
   formData.append("creatorId", creatorId);
   formData.append("amount", amount);
   formData.append("details", details);
-  formData.append("paymentoptions", "fixed_price");
+  formData.append("paymentOption", "fixed_price");
   formData.append("contractTitle", contractTitle);
   formData.append("paymentScheduleType", "whole");
   if (attachments) {
     formData.append("attachments", attachments);
   }
-  const response = await fetch(
-    "https://findcreators-537037621947.asia-south2.run.app/api/offer-create",
-    {
-      method: "POST",
-      headers: {
-        "x-access-token": `${localStorage.getItem("token")}`,
-      },
-      body: formData,
-    }
-  );
 
-  return response.data;
+  try {
+    const response = await makeRequest({
+      method: "POST",
+      url: API_URLS.CREATE_OFFER,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "x-access-token": localStorage.getItem("token"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating offer:", error);
+    throw error;
+  }
 };

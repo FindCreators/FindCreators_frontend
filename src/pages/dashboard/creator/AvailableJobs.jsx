@@ -100,6 +100,11 @@ const AvailableJobs = () => {
     navigate(`/creator/available-jobs/${job.id}`, { state: { job } });
   };
 
+  const isApplied = (job) => {
+    const userId = localStorage.getItem("userId");
+    return job.applications.some((app) => app.creatorId === userId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Search and Filters Header */}
@@ -269,9 +274,7 @@ const AvailableJobs = () => {
                 job={job}
                 onApply={() => openModal(job.id)}
                 onViewDetails={viewJobDetails}
-                isApplied={job.applicants?.includes(
-                  localStorage.getItem("userId")
-                )}
+                isApplied={isApplied(job)}
               />
             ))}
           </div>

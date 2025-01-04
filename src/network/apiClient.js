@@ -35,11 +35,19 @@ apiClient.interceptors.request.use(
 );
 
 export const logout = () => {
-  const itemsToClear = ["token", "number", "userState", "logintype", "email"];
+  const itemsToClear = [
+    "token",
+    "number",
+    "userState",
+    "logintype",
+    "email",
+    "profile", // Add these
+    "userType", // Items to clear
+    "userId", // on logout
+  ];
   itemsToClear.forEach((item) => localStorage.removeItem(item));
   toast.success("Logged out successfully");
 };
-
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

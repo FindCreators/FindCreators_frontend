@@ -1,69 +1,221 @@
-import React, { useState, useEffect, useRef } from "react";
-import { MessageCircle, MoreHorizontal, Loader } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { MessageCircle, MoreHorizontal, Loader, Pencil } from "lucide-react";
+import { makeRequest } from "../../../network/apiHelpers";
+import {
+  getBrandListings,
+  getCreatorProfile,
+} from "../../../network/networkCalls";
 import toast from "react-hot-toast";
-import { getBrandListings } from "../../../network/networkCalls";
-import JobOptionsPopup from "../../../components/dashboard/brand/JobOptionsPopup";
+import { useNavigate } from "react-router-dom";
+
+const ProposalSkeleton = () => (
+  <div className="animate-pulse bg-white rounded-lg shadow-sm p-6">
+    <div className="flex justify-between">
+      <div>
+        <div className="h-6 w-48 bg-gray-200 rounded"></div>
+        <div className="h-4 w-32 bg-gray-200 rounded mt-2"></div>
+        <div className="flex gap-4 mt-2">
+          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+      <div className="h-8 w-28 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+);
+
+const OfferDetails = ({ job, creatorProfile, onUpdateOffer }) => {
+  if (!creatorProfile) return null;
+
+  return (
+    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+            <img
+              src={creatorProfile.profilePicture || "/api/placeholder/40/40"}
+              alt={creatorProfile.fullName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900">
+              Offer given to {creatorProfile.fullName}
+            </h4>
+            <p className="text-sm text-gray-600">{creatorProfile.email}</p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onUpdateOffer(job.offerId)}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <Pencil className="w-4 h-4" />
+          Update Offer
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const OfferUpdateModal = ({ offerId, onClose, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    contractTitle: "",
+    amount: "",
+    paymentOption: "fixed_price",
+    details: "",
+  });
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-semibold mb-4">Update Offer Terms</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contract Title
+            </label>
+            <input
+              type="text"
+              id="contractTitle"
+              value={formData.contractTitle}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Offer Amount
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2">$</span>
+              <input
+                type="number"
+                id="amount"
+                value={formData.amount}
+                onChange={handleChange}
+                className="w-full pl-8 p-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Payment Type
+            </label>
+            <select
+              id="paymentOption"
+              value={formData.paymentOption}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+            >
+              <option value="fixed_price">Fixed Price</option>
+              <option value="milestone">Milestone Based</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Offer Details
+            </label>
+            <textarea
+              id="details"
+              value={formData.details}
+              onChange={handleChange}
+              rows="4"
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onUpdate(offerId, formData)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Update Offer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MyJobs = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-    totalJobs: 0,
-  });
-  const [filters, setFilters] = useState({
-    status: "all",
-    categories: [],
-    budget: null,
-  });
-  const [statusCounts, setStatusCounts] = useState({
-    all: 0,
-    "in-progress": 0,
-    "action-needed": 0,
-    hiring: 0,
-  });
-  const [selectedJobId, setSelectedJobId] = useState(null);
-  const buttonRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [creatorProfiles, setCreatorProfiles] = useState({});
+  const [isUpdatingOffer, setIsUpdatingOffer] = useState(false);
+  const navigate = useNavigate();
 
-  const jobStatuses = [
-    { label: "All Jobs", count: statusCounts.all, id: "all" },
-  ];
+  const fetchCreatorProfiles = async (creatorIds) => {
+    const validCreatorIds = creatorIds.filter(
+      (id) => id && id !== "000000000000000000000000"
+    );
 
-  const fetchJobs = async () => {
-    setIsLoading(true);
+    if (validCreatorIds.length === 0) return;
+
     try {
-      const response = await getBrandListings(
-        pagination.page,
-        pagination.limit,
-        filters
+      const profiles = await Promise.all(
+        validCreatorIds.map(async (id) => {
+          try {
+            const response = await getCreatorProfile(id);
+            return { id, data: response?.data?.[0] };
+          } catch (error) {
+            console.error(`Error fetching profile for creator ${id}:`, error);
+            return { id, data: null };
+          }
+        })
       );
 
-      setJobs(response.data || []);
-      setPagination((prev) => ({
-        ...prev,
-        totalPages: Math.ceil(response.total / prev.limit),
-        totalJobs: response.total,
-      }));
+      const newProfiles = profiles.reduce((acc, { id, data }) => {
+        if (data) {
+          acc[id] = data;
+        }
+        return acc;
+      }, {});
 
-      const newStatusCounts = {
-        all: response.data?.length || 0,
-        "in-progress":
-          response.data?.filter((job) => job.status === "in-progress").length ||
-          0,
-        "action-needed":
-          response.data?.filter((job) => job.status === "action-needed")
-            .length || 0,
-        hiring:
-          response.data?.filter((job) => job.status === "hiring").length || 0,
-      };
-      setStatusCounts(newStatusCounts);
+      setCreatorProfiles((prev) => ({ ...prev, ...newProfiles }));
     } catch (error) {
-      toast.error("Failed to fetch jobs");
+      console.error("Error fetching creator profiles:", error);
+      toast.error("Failed to load some creator profiles");
+    }
+  };
+
+  const fetchJobs = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getBrandListings(1, 10, {});
+      const jobsData = response.data || [];
+      setJobs(jobsData);
+
+      const creatorIds = jobsData
+        .map((job) => job.offerToCreatorId)
+        .filter((id) => id && id !== "000000000000000000000000");
+
+      if (creatorIds.length > 0) {
+        await fetchCreatorProfiles(creatorIds);
+      }
+    } catch (error) {
       console.error("Error fetching jobs:", error);
+      toast.error("Failed to fetch jobs");
     } finally {
       setIsLoading(false);
     }
@@ -71,103 +223,91 @@ const MyJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [pagination.page, filters]);
+  }, []);
 
-  const handleViewProposals = (jobId, applicants, jobDetails) => {
-    console.log(applicants, jobDetails);
-    navigate(`/brand/jobs/${jobId}/proposals`, {
-      state: { applicants, jobDetails },
+  const handleUpdateOffer = async (offerId, updatedData) => {
+    try {
+      await makeRequest({
+        url: `/api/offer-update?id=${offerId}`,
+        method: "PATCH",
+        data: Object.entries(updatedData).map(([key, value]) => ({
+          key,
+          value: String(value),
+        })),
+      });
+      toast.success("Offer updated successfully");
+      setIsUpdatingOffer(false);
+      setSelectedOffer(null);
+      fetchJobs();
+    } catch (error) {
+      console.error("Error updating offer:", error);
+      toast.error("Failed to update offer");
+    }
+  };
+
+  const handleViewProposals = (job) => {
+    navigate(`/brand/jobs/${job.id}/proposals`, {
+      state: { jobDetails: job },
     });
   };
 
-  const handleStatusChange = (statusId) => {
-    setFilters((prev) => ({ ...prev, status: statusId }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
-  };
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 space-y-4">
+        <ProposalSkeleton />
+        <ProposalSkeleton />
+        <ProposalSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">Your jobs</h1>
-        <div className="flex gap-4">
-          <button
-            onClick={() => navigate("/brand/post-job")}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            Post a job
-          </button>
-        </div>
+        <h1 className="text-2xl font-semibold">Your Jobs</h1>
+        <button
+          onClick={() => navigate("/brand/post-job")}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          Post a Job
+        </button>
       </div>
-      <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-        {jobStatuses.map((status) => (
-          <button
-            key={status.id}
-            onClick={() => handleStatusChange(status.id)}
-            className={`px-4 py-2 rounded-full border transition-colors whitespace-nowrap
-              ${
-                filters.status === status.id
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-300 hover:border-gray-400"
-              }`}
-          >
-            {status.label} ({status.count})
-          </button>
-        ))}
-      </div>
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader className="w-8 h-8 animate-spin text-green-600" />
-        </div>
-      ) : jobs.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500">No jobs found</p>
+
+      {jobs.length === 0 ? (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No jobs posted yet
+          </h3>
+          <p className="text-gray-600">
+            Start by posting your first job to find creators.
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow relative">
-          {jobs.map((job, index) => (
-            <div
-              key={job.id}
-              className={`p-6 ${
-                index !== jobs.length - 1 ? "border-b border-gray-200" : ""
-              }`}
-            >
-              <div className="flex items-start justify-between">
+        <div className="space-y-4">
+          {jobs.map((job) => (
+            <div key={job.id} className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex justify-between">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {job.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Posted {formatDate(job.createdAt)}
+                  <h3 className="text-lg font-medium">{job.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Budget: {job.currency} {job.budget?.toLocaleString()}
                   </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-6">
-                    <span className="inline-flex items-center text-sm text-gray-600">
+
+                  <div className="flex gap-4 mt-2">
+                    <span className="text-sm text-gray-600">
                       {job.applicationsCount || 0} Proposals
                     </span>
-                    <span className="inline-flex items-center text-sm text-gray-600">
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {job.messagesCount || 0} Messaged
-                    </span>
-                    <span className="inline-flex items-center text-sm text-gray-600">
-                      Budget: {job.currency} {job.budget}
+                    <span className="text-sm text-gray-600 flex items-center">
+                      <MessageCircle className="w-4 h-4 mr-1" />
+                      {job.messagesCount || 0} Messages
                     </span>
                   </div>
+
                   {job.skills?.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {job.skills.map((skill, i) => (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {job.skills.map((skill, idx) => (
                         <span
-                          key={i}
+                          key={idx}
                           className="px-2 py-1 text-xs bg-gray-100 rounded-full text-gray-600"
                         >
                           {skill}
@@ -176,54 +316,40 @@ const MyJobs = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    className="text-green-600 hover:text-green-700 font-medium transition-colors"
-                    onClick={() =>
-                      handleViewProposals(job.id, job.applicants, job)
-                    }
-                  >
-                    View proposals
-                  </button>
-                  <button
-                    ref={buttonRef}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                    onClick={() => setSelectedJobId(job.id)}
-                  >
-                    <MoreHorizontal className="h-5 w-5" />
-                  </button>
-                </div>
+
+                <button
+                  onClick={() => handleViewProposals(job)}
+                  className="text-green-600 hover:text-green-700 font-medium"
+                >
+                  View Proposals
+                </button>
               </div>
-              {selectedJobId === job.id && (
-                <JobOptionsPopup
-                  jobId={job.id}
-                  onClose={() => setSelectedJobId(null)}
-                  fetchJobs={fetchJobs}
-                  buttonRef={buttonRef}
-                />
-              )}
+
+              {job.offerToCreatorId &&
+                job.offerToCreatorId !== "000000000000000000000000" && (
+                  <OfferDetails
+                    job={job}
+                    creatorProfile={creatorProfiles[job.offerToCreatorId]}
+                    onUpdateOffer={(offerId) => {
+                      setSelectedOffer(offerId);
+                      setIsUpdatingOffer(true);
+                    }}
+                  />
+                )}
             </div>
           ))}
         </div>
       )}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center gap-2">
-          {[...Array(pagination.totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: i + 1 }))
-              }
-              className={`px-3 py-1 rounded ${
-                pagination.page === i + 1
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+
+      {isUpdatingOffer && (
+        <OfferUpdateModal
+          offerId={selectedOffer}
+          onClose={() => {
+            setIsUpdatingOffer(false);
+            setSelectedOffer(null);
+          }}
+          onUpdate={handleUpdateOffer}
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
+  console.log(isApplied);
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {

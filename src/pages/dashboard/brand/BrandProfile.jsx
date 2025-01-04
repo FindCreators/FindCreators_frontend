@@ -20,7 +20,7 @@ import {
 import BrandProfileHeader from "../../../components/dashboard/brand/BrandProfileHeader";
 import EditProfileModal from "../../../components/dashboard/brand/EditProfileModal";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../../network/apiClient";
+import { useAuth } from "../../../hooks/useAuth";
 
 const BrandProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -28,7 +28,7 @@ const BrandProfile = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [modalData, setModalData] = useState(null);
   const userId = localStorage.getItem("userId");
-  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     fetchProfile();
@@ -109,7 +109,6 @@ const BrandProfile = () => {
   };
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   if (isLoading) {

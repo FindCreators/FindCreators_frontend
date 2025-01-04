@@ -11,7 +11,7 @@ import {
   updateCreatorProfile,
 } from "../../../network/networkCalls";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../../network/apiClient";
+import { useAuth } from "../../../hooks/useAuth";
 
 const CreatorProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -19,6 +19,7 @@ const CreatorProfile = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [activeSection, setActiveSection] = useState("about");
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     console.log("useEffect triggered");
@@ -91,7 +92,6 @@ const CreatorProfile = () => {
   };
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   const handleImageUpload = async (type, file) => {

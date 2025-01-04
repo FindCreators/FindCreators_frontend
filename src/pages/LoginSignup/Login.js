@@ -6,6 +6,11 @@ import { useDispatch } from "react-redux";
 import "react-phone-number-input/style.css";
 import toast from "react-hot-toast";
 import { login } from "../../redux/actions/authActions";
+import {
+  loginFailure,
+  loginStart,
+  loginSuccess,
+} from "../../redux/slices/authSlice";
 
 const Login = () => {
   const [error, setError] = useState("");
@@ -24,23 +29,27 @@ const Login = () => {
     verifyOTP,
     resendOTP,
   } = usePhoneAuth({
-    onSuccess: async () => {
+    onSuccess: async (user) => {
       try {
-        const response = await dispatch(login(phoneNumber.substring(1)));
-        if (response.profile.type === "creator") {
-          navigate("/creator");
-        } else if (response.profile.type === "brand") {
-          navigate("/brand");
-        } else {
-          setError("Invalid user type");
+        // Phone number with +91 prefix
+        const cleanPhone = phoneNumber.substring(1); // Remove the + prefix
+        const response = await dispatch(login(cleanPhone));
+
+        if (!response?.profile?.type) {
+          throw new Error("Invalid user type");
         }
+
+        toast.success("Login successful!");
+        navigate(`/${response.profile.type}`);
       } catch (error) {
         console.error("Login error:", error);
-        setError(error.message);
+        setError(error.message || "Login failed");
+        toast.error(error.message || "Login failed");
       }
     },
     onError: (errorMessage) => {
       toast.error(errorMessage);
+      setError(errorMessage);
     },
   });
 
@@ -152,7 +161,7 @@ const Login = () => {
                   defaultCountry="IN"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
-                  className="  w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="*:outline-none  w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 

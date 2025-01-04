@@ -8,6 +8,8 @@ import {
 } from "../../network/networkCalls";
 import SignupForm from "./SignupForm";
 import VerifyPhone from "./VerifyPhone";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../redux/slices/authSlice";
 
 const Signup = () => {
   const [mode, setMode] = useState("creator");
@@ -21,33 +23,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
-
-  const {
-    phoneNumber,
-    otp,
-    setOtp,
-    step,
-    loading,
-    countdown,
-    handlePhoneNumberChange,
-    sendOTP,
-    verifyOTP,
-    resetForm,
-    resendOTP,
-  } = usePhoneAuth({
-    onSuccess: async () => {
-      try {
-        formData.phone = phoneNumber.substring(1);
-        await createUser(mode, formData);
-        navigate("/home");
-      } catch (e) {
-        setError("Something went wrong");
-      }
-    },
-    onError: (errorMessage) => {
-      toast.error(errorMessage);
-    },
-  });
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({
@@ -59,6 +35,22 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Validate required fields
+    if (!formData.fullName?.trim()) {
+      setError("Full name is required");
+      return;
+    }
+
+    if (!formData.email?.trim()) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!formData.password?.trim()) {
+      setError("Password is required");
+      return;
+    }
 
     if (!phoneNumber || phoneNumber.length < 13) {
       setError("Please enter a valid phone number");
@@ -76,29 +68,58 @@ const Signup = () => {
         setError(validationResponse.error);
         return;
       }
-      sendOTP();
+
+      // Store signup data
+      const signupData = {
+        ...formData,
+        userType: mode,
+        phone: phoneNumber.substring(1),
+      };
+      localStorage.setItem("signupData", JSON.stringify(signupData));
+
+      await sendOTP();
     } catch (e) {
+      console.error(e);
       setError("Something went wrong");
     }
   };
 
-  useEffect(() => {
-    setFormData(
-      mode === "creator"
-        ? {
-            fullName: "",
-            email: "",
-            phone: "",
-            password: "",
-          }
-        : {
-            companyName: "",
-            email: "",
-            phone: "",
-            password: "",
-          }
-    );
-  }, [mode]);
+  const {
+    phoneNumber,
+    otp,
+    setOtp,
+    step,
+    loading,
+    countdown,
+    handlePhoneNumberChange,
+    sendOTP,
+    verifyOTP,
+    resetForm,
+    resendOTP,
+  } = usePhoneAuth({
+    isSignup: true,
+    onSuccess: async (savedData) => {
+      try {
+        const response = await createUser(savedData.userType, savedData);
+        dispatch(
+          loginSuccess({
+            profile: response.profile,
+            jwt: response.token,
+          })
+        );
+        localStorage.removeItem("signupData");
+        toast.success("Account created successfully!");
+        navigate(`/${savedData.userType}`);
+      } catch (error) {
+        toast.error(error?.details || "Failed to create account");
+        setError(error?.details || "Failed to create account");
+      }
+    },
+    onError: (errorMessage) => {
+      toast.error(errorMessage);
+      setError(errorMessage);
+    },
+  });
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

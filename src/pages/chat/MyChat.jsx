@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { StreamChat } from "stream-chat";
 import {
   Chat,
@@ -10,96 +10,148 @@ import {
   Thread,
 } from "stream-chat-react";
 import "stream-chat-react/dist/css/v2/index.css";
-import { getUserToken } from '../../network/networkCalls';
-import ChatList from './components/ChatList';
-import { useLocation } from 'react-router-dom';
+import { getUserToken } from "../../network/networkCalls";
+import ChatList from "./components/ChatList";
+import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { MessageCircle } from 'lucide-react'; // Import the MessageCircle icon from Lucide React
+import { MessageCircle, Loader } from "lucide-react";
+import axios from "axios";
+import { makeRequest } from "../../network/apiHelpers";
 
-// Initialize Stream Chat
-const apiKey = "drugqfqnfynm"; // Replace with your actual API key
+const apiKey = "drugqfqnfynm";
 const client = StreamChat.getInstance(apiKey);
+
+const createStreamUser = async (userId, name, image) => {
+  try {
+    console.log("Creating Stream user:", userId);
+    await makeRequest({
+      method: "post",
+      url: `api/chat-upsert-users?creatorId=${userId}`,
+    });
+  } catch (error) {
+    console.error(`Error creating Stream user (${userId}):`, error);
+    throw new Error("Failed to create or update Stream user.");
+  }
+};
+
+const initializeStreamChannel = async (client, channelData, userType) => {
+  try {
+    const currentUserId = client.userID;
+    const otherUserId =
+      userType === "brand" ? channelData.creatorId : channelData.brandId;
+
+    const channelId = `${channelData.brandId}-${channelData.creatorId}`;
+    const channel = client.channel("messaging", channelId, {
+      members: [channelData.brandId, channelData.creatorId],
+      name: "FindCreators Chat",
+    });
+
+    await channel.watch();
+    return channel;
+  } catch (error) {
+    console.error("Error initializing Stream channel:", error);
+    throw new Error("Failed to initialize chat channel.");
+  }
+};
 
 const MyChat = () => {
   const location = useLocation();
-  const [userToken, setUserToken] = useState(null);
+  const userType = useSelector((state) => state.auth.userType);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [channel, setChannel] = useState(null);
   const [user, setUser] = useState(null);
-  const userType = useSelector((state) => state.auth.userType);
+  const channelData = location.state?.channelData;
 
   useEffect(() => {
-    const fetchUserToken = async () => {
+    let mounted = true;
+
+    const initializeChat = async () => {
+      setIsLoading(true);
+
       try {
-        setIsLoading(true);
-        const data = await getUserToken();
-        console.log("Fetched token data:", data);
+        const tokenData = await getUserToken();
+        if (!mounted) return;
 
-        // Set user data for Stream Chat
-        setUserToken(data.token);
-        setUser({
-          id: data.userId,
-          name: data.name,
-          image: data.image,
-        });
+        const currentUser = {
+          id: tokenData.userId,
+          name: tokenData.name,
+          image: tokenData.image,
+        };
+        setUser(currentUser);
+
+        if (client.userID) await client.disconnectUser();
+
+        await client.connectUser(currentUser, tokenData.token);
+
+        if (channelData) {
+          const otherUserId =
+            userType === "brand" ? channelData.creatorId : channelData.brandId;
+          const otherUserName =
+            userType === "brand"
+              ? channelData.creatorName
+              : channelData.brandName;
+          const otherUserImage =
+            userType === "brand"
+              ? channelData.creatorImage
+              : channelData.brandImage;
+
+          await createStreamUser(
+            channelData.creatorId,
+            tokenData.name,
+            tokenData.image
+          );
+          await createStreamUser(
+            channelData.creatorId,
+            otherUserName,
+            otherUserImage
+          );
+
+          const newChannel = await initializeStreamChannel(
+            client,
+            channelData,
+            userType
+          );
+          if (mounted) setChannel(newChannel);
+        }
       } catch (error) {
-        console.error("Error fetching user token:", error);
-        setHasError(true);
+        console.error("Error initializing chat:", error);
+        if (mounted) {
+          setHasError(true);
+          setErrorMessage("Failed to initialize chat. Please try again later.");
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
-    fetchUserToken();
-  }, []);
+    initializeChat();
 
-  // Connect user to Stream Chat client and create channel
-  useEffect(() => {
-    const connectUser = async () => {
-      if (!userToken || !user) {
-        return;
-      }
-      await client.connectUser(user, userToken);
-      console.log("User connected successfully");
-
-      const channelData = location.state?.channelData;
-      if (channelData) {
-        const channelId = `${channelData.brandId}-${channelData.creatorId}`;
-        const chan = client.channel("messaging", channelId, {
-            name: "FindCreators Chat",
-            image: "https://bit.ly/2O35mws",
-            members: [channelData.creatorId, channelData.brandId],
-            creatorId: channelData.creatorId,
-            creatorName: channelData.creatorName,
-            brandId: channelData.brandId,
-            brandName: channelData.brandName,
-            creatorImage: channelData.creatorImage,
-            brandImage: channelData.brandImage,
-          });
-          setChannel(chan)
-          console.log("Channel created successfully");
-      }
+    return () => {
+      mounted = false;
+      if (client.userID) client.disconnectUser();
     };
+  }, [location.state?.channelData, userType]);
 
-    connectUser();
-
-    if (client) {
-      client.on("connection.recovered", () => {
-        console.log("Connection recovered");
-      });
-    }
-  }, [userToken, user, location.state?.channelData, userType]);
-
-  // Display error or loading state
   if (hasError) {
     return (
-      <div>Error initializing the application. Please try again later.</div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <MessageCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error</h3>
+          <p className="text-sm text-gray-500">{errorMessage}</p>
+        </div>
+      </div>
     );
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="w-8 h-8 animate-spin text-green-600" />
+      </div>
+    );
   }
 
   return (
@@ -122,9 +174,11 @@ const MyChat = () => {
         ) : (
           <div className="w-3/4 flex items-center justify-center">
             <div className="text-center">
-              <MessageCircle className="mx-auto mb-4 w-24 h-24 text-gray-400" />
+              <MessageCircle className="w-24 h-24 text-gray-400 mx-auto mb-4" />
               <p className="text-lg font-medium text-gray-900">Your Messages</p>
-              <p className="text-sm text-gray-500">Select a conversation to start messaging</p>
+              <p className="text-sm text-gray-500">
+                Select a conversation to start messaging
+              </p>
             </div>
           </div>
         )}

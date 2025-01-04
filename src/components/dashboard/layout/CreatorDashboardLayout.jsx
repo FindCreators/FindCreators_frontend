@@ -7,6 +7,7 @@ import {
   Bell,
   UserCircle,
   MessageCircle,
+  FileText,
 } from "lucide-react";
 
 const CreatorDashboardLayout = () => {
@@ -20,12 +21,21 @@ const CreatorDashboardLayout = () => {
       path: "/creator/available-jobs",
     },
     {
+      icon: Briefcase,
+      label: "Job In Progress",
+      path: "/creator/in-progress-jobs",
+    },
+    {
       icon: ClipboardCheck,
       label: "My Applications",
       path: "/creator/my-applications",
     },
-    {icon:MessageCircle, label:"Messages",path:"/chat"}
-
+    {
+      icon: FileText,
+      label: "Received Offers",
+      path: "/creator/received-offers",
+    },
+    { icon: MessageCircle, label: "Messages", path: "/chat" },
   ];
 
   return (

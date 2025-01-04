@@ -18,8 +18,8 @@ const DashboardLayout = ({ userType }) => {
     { icon: LayoutDashboard, label: "Dashboard", path: "/brand" },
     { icon: PlusCircle, label: "Post New Job", path: "/brand/post-job" },
     { icon: ClipboardList, label: "My Jobs", path: "/brand/jobs" },
-    { icon: Users, label: "Applications", path: "/brand/applications" },
-    {icon: MessageCircle, label:"Messages",path:"/chat"}
+    { icon: Users, label: "Job In Progress", path: "/brand/in-progress-jobs" },
+    { icon: MessageCircle, label: "Messages", path: "/chat" },
   ];
 
   return (

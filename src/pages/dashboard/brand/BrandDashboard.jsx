@@ -46,10 +46,12 @@ const JobCardSkeleton = () => (
 const BrandDashboard = () => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
-    totalActiveListings: 0,
-    totalApplications: 0,
+    activeJobs: 0,
+    completedJobs: 0,
+    inProgressJobs: 0,
     totalSpent: 0,
-    latestActiveListings: [], // Initialize as an empty array
+    latestActiveListings: [],
+    latestInProgressListings: [],
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -63,7 +65,14 @@ const BrandDashboard = () => {
       const response = await makeRequest({
         url: "/api/brand-dashboard",
       });
-      setDashboardData(response || {}); // Ensure response is not null
+      setDashboardData({
+        activeJobs: response?.activeJobs || 0,
+        completedJobs: response?.completedJobs || 0,
+        inProgressJobs: response?.inProgressJobs || 0,
+        totalSpent: response?.totalSpent || 0,
+        latestActiveListings: response?.latestActiveListings || [],
+        latestInProgressListings: response?.latestInProgressListings || [],
+      });
     } catch (error) {
       toast.error("Failed to load dashboard data");
       console.error("Dashboard fetch error:", error);
@@ -76,40 +85,118 @@ const BrandDashboard = () => {
     {
       icon: BriefcaseIcon,
       label: "Active Jobs",
-      value: dashboardData.totalActiveListings,
+      value: dashboardData?.activeJobs || 0,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
     },
     {
+      icon: TrendingUp,
+      label: "In Progress Jobs",
+      value: dashboardData?.inProgressJobs || 0,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+    },
+    {
       icon: Users,
-      label: "Total Applications",
-      value: dashboardData.totalApplications,
+      label: "Completed Jobs",
+      value: dashboardData?.completedJobs || 0,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
     },
     {
       icon: DollarSign,
       label: "Total Spent",
-      value: `$${dashboardData.totalSpent?.toLocaleString() || 0}`,
+      value: `$${(dashboardData?.totalSpent || 0).toLocaleString()}`,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
-    },
-    {
-      icon: TrendingUp,
-      label: "Campaign ROI",
-      value: "--",
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
     },
   ];
 
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   };
+
+  const renderJobList = (jobs = [], title, emptyMessage, viewAllPath) => (
+    <div className="bg-white rounded-xl shadow-sm">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          {(jobs?.length ?? 0) > 0 && (
+            <button
+              onClick={() => navigate(viewAllPath)}
+              className="text-blue-600 hover:text-blue-700 text-sm"
+            >
+              View All →
+            </button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="divide-y">
+            {[1, 2, 3].map((i) => (
+              <JobCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (jobs?.length ?? 0) === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>{emptyMessage}</p>
+            <button
+              onClick={() => navigate("/brand/post-job")}
+              className="text-blue-600 hover:text-blue-700 mt-2"
+            >
+              Create your first job post →
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {jobs.map((job) => (
+              <div
+                key={job?.id}
+                className="py-4 flex justify-between items-center"
+              >
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {job?.title || "Untitled Job"}
+                  </h3>
+                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>
+                        {job?.location?.city || "Unknown"},{" "}
+                        {job?.location?.country || "Unknown"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDate(job?.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm">
+                    <span className="text-gray-500">
+                      {job?.applicationsCount || 0} applications
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium text-green-600">
+                    {job?.currency || "$"} {(job?.budget || 0).toLocaleString()}
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                    {job?.status || "Unknown"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -123,7 +210,6 @@ const BrandDashboard = () => {
         </button>
       </div>
 
-      {/* Stats Grid */}
       {isLoading ? (
         <StatsSkeleton />
       ) : (
@@ -154,79 +240,19 @@ const BrandDashboard = () => {
         </div>
       )}
 
-      {/* Recent Jobs */}
-      <div className="bg-white rounded-xl shadow-sm">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Recent Job Posts</h2>
-            {dashboardData.totalActiveListings > 0 && (
-              <button
-                onClick={() => navigate("/brand/jobs")}
-                className="text-blue-600 hover:text-blue-700 text-sm"
-              >
-                View All →
-              </button>
-            )}
-          </div>
+      {renderJobList(
+        dashboardData?.latestInProgressListings,
+        "In Progress Job Posts",
+        "No in progress job posts yet.",
+        "/brand/in-progress-jobs"
+      )}
 
-          {isLoading ? (
-            <div className="divide-y">
-              {[1, 2, 3].map((i) => (
-                <JobCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : dashboardData.latestActiveListings?.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No active job posts yet.</p>
-              <button
-                onClick={() => navigate("/brand/post-job")}
-                className="text-blue-600 hover:text-blue-700 mt-2"
-              >
-                Create your first job post →
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {dashboardData.latestActiveListings > 0 &&
-                dashboardData.latestActiveListings.map((job) => (
-                  <div
-                    key={job.id}
-                    className="py-4 flex justify-between items-center"
-                  >
-                    <div>
-                      <h3 className="font-medium text-gray-900">{job.title}</h3>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>
-                            {job.location.city}, {job.location.country}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(job.createdAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <span className="text-gray-500">
-                          {job.applicationsCount} applications
-                        </span>
-                      </div>
-                      <div className="text-sm font-medium text-green-600">
-                        {job.currency} {job.budget.toLocaleString()}
-                      </div>
-                      <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                        {job.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {renderJobList(
+        dashboardData?.latestActiveListings,
+        "Recent Job Posts",
+        "No active job posts yet.",
+        "/brand/jobs"
+      )}
     </div>
   );
 };
