@@ -144,7 +144,8 @@ const JobDetails = () => {
                 <h2 className="text-2xl font-semibold text-gray-700 mb-3">
                   Attachments
                 </h2>
-                {job.attachments.length > 0 ? (
+                {Array.isArray(job.attachments) &&
+                job.attachments.length > 0 ? (
                   <div className="space-y-3">
                     {job.attachments.map((attachment, index) => {
                       const attachmentUrl =

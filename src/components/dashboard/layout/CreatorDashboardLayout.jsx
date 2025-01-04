@@ -9,6 +9,7 @@ import {
   MessageCircle,
   FileText,
 } from "lucide-react";
+import JobSearch from "../creator/JobSearch";
 
 const CreatorDashboardLayout = () => {
   const location = useLocation();
@@ -42,7 +43,6 @@ const CreatorDashboardLayout = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 fixed w-full z-50">
         <div className="flex items-center justify-between px-6 py-3">
-          {/* Company Logo and Name */}
           <div className="flex items-center space-x-3">
             <a
               href="/creator"
@@ -52,7 +52,10 @@ const CreatorDashboardLayout = () => {
             </a>
           </div>
 
-          {/* Notifications and Profile */}
+          <div className="flex-1 max-w-2xl mx-4">
+            <JobSearch />
+          </div>
+
           <div className="flex items-center space-x-6">
             <button
               className="text-gray-400 hover:text-gray-600 focus:outline-none transition duration-150"

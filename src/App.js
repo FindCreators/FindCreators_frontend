@@ -35,6 +35,7 @@ import ReceivedOffers from "./pages/dashboard/creator/ReceivedOffers";
 import MyChat from "./pages/chat/MyChat";
 import BrandProfile from "./pages/dashboard/brand/BrandProfile";
 import CreatorProfile from "./components/dashboard/creator/CreatorProfile";
+import SearchResults from "./pages/dashboard/creator/SearchResults";
 
 const PrivateRoute = ({ type }) => {
   const { isAuthenticated, userType } = useAuth();
@@ -116,6 +117,7 @@ function AppContent() {
             <Route path="in-progress-jobs" element={<InProgressJobs />} />
             <Route path="my-applications" element={<MyApplications />} />
             <Route path="received-offers" element={<ReceivedOffers />} />
+            <Route path="available-search-jobs" element={<SearchResults />} />
           </Route>
         </Route>
 
