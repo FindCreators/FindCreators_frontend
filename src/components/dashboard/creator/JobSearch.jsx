@@ -72,10 +72,11 @@ const JobSearch = () => {
     setSuggestions([]);
   };
 
-  console.log("suggestions", suggestions);
-
   return (
-    <div className="relative w-full max-w-2xl" ref={searchRef}>
+    <div
+      className="relative w-full px-4 sm:px-0 sm:max-w-2xl mx-auto"
+      ref={searchRef}
+    >
       <div className="relative">
         <input
           type="text"
@@ -86,26 +87,35 @@ const JobSearch = () => {
           }}
           onKeyPress={(e) => e.key === "Enter" && handleSearch(query)}
           placeholder="Search for jobs..."
-          className="w-full px-4 py-2 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-2 pl-9 sm:pl-10 pr-8 sm:pr-10 text-sm sm:text-base 
+                   border border-gray-300 rounded-lg focus:outline-none focus:ring-2 
+                   focus:ring-blue-500 focus:border-transparent"
         />
-        <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        <Search className="absolute left-2.5 sm:left-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
         {query && (
           <button
             onClick={clearSearch}
-            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+            className="absolute right-2.5 sm:right-3 top-2.5 text-gray-400 
+                     hover:text-gray-600 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         )}
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200">
+        <div
+          className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg 
+                      border border-gray-200 max-h-60 overflow-y-auto"
+        >
           {suggestions.map((suggestion, index) => (
             <button
               key={index}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+              className="w-full px-3 sm:px-4 py-2.5 text-left text-sm sm:text-base
+                       hover:bg-gray-50 focus:outline-none focus:bg-gray-50 
+                       first:rounded-t-lg last:rounded-b-lg transition-colors
+                       border-b last:border-b-0 border-gray-100"
             >
               {suggestion.title}
             </button>
@@ -114,7 +124,11 @@ const JobSearch = () => {
       )}
 
       {isLoading && (
-        <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-4 text-center text-gray-500">
+        <div
+          className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg 
+                      border border-gray-200 p-3 sm:p-4 text-center text-sm sm:text-base 
+                      text-gray-500"
+        >
           Loading suggestions...
         </div>
       )}

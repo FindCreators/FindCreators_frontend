@@ -11,6 +11,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Facebook, Twitter, Instagram, Link as LinkedIn } from "lucide-react";
+import { Building2, Building, Users2 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   getBrandProfile,
@@ -21,6 +22,7 @@ import BrandProfileHeader from "../../../components/dashboard/brand/BrandProfile
 import EditProfileModal from "../../../components/dashboard/brand/EditProfileModal";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
+import axios from "axios";
 
 const BrandProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -83,28 +85,21 @@ const BrandProfile = () => {
     }
   };
 
-  const handleImageUpload = async (type, file) => {
+  const handleImageUpdate = async (type, imageUrl) => {
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-      }
-
-      let response;
       if (type === "logo") {
-        console.log("Uploading logo with formData:", formData);
-        response = await uploadBrandLogo(formData);
+        const updateData = [
+          {
+            key: "logo",
+            value: imageUrl,
+          },
+        ];
+        await updateBrandProfile(updateData);
       }
-      if (response?.data) {
-        const updatedData = { [type]: response.data.url };
-        toast.success(
-          `${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`
-        );
-      }
+      await fetchProfile(); // Refresh the profile data
     } catch (error) {
-      toast.error(`Failed to update ${type}`);
-      console.error("Image upload error:", error);
+      console.error(`Error updating profile ${type}:`, error);
+      toast.error(`Failed to update profile ${type}`);
     }
   };
   const handleLogout = () => {
@@ -122,6 +117,8 @@ const BrandProfile = () => {
     );
   }
 
+  console.log("Profile data:", profile.companySize);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <BrandProfileHeader
@@ -130,9 +127,59 @@ const BrandProfile = () => {
           setModalData(profile);
           setActiveModal("basic");
         }}
-        onUploadCover={(file) => handleImageUpload("cover", file)}
-        onUploadLogo={(file) => handleImageUpload("logo", file)}
+        onUploadSuccess={handleImageUpdate} // New prop for handling successful uploads
       />
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Basic Information</h2>
+            <button
+              onClick={() => {
+                setModalData(profile);
+                setActiveModal("basic");
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <Edit2 className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-500">Company Name</label>
+                <p className="text-gray-900 font-medium">
+                  {profile?.companyName || "Not provided"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                <Building className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-500">Industry</label>
+                <p className="text-gray-900 font-medium">
+                  {profile?.industry || "Not specified"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <Users2 className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-500">Company Size</label>
+                <p className="text-gray-900 font-medium">
+                  {profile?.companySize}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 -mt-8 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
@@ -270,6 +317,7 @@ const BrandProfile = () => {
                   <Edit2 className="w-5 h-5" />
                 </button>
               </div>
+
               <div className="space-y-4">
                 {[
                   { icon: Globe, label: "Website", value: profile?.website },
@@ -313,52 +361,73 @@ const BrandProfile = () => {
                 <h2 className="text-xl font-semibold">Social Media</h2>
                 <button
                   onClick={() => {
-                    setModalData(profile);
+                    // Transform socialHandles array into an object
+                    const socialHandlesObject = profile?.socialHandles?.reduce(
+                      (acc, handle) => {
+                        acc[handle.platform.toLowerCase()] = handle.url;
+                        return acc;
+                      },
+                      {}
+                    );
+
+                    setModalData({
+                      ...profile,
+                      socialHandles: socialHandlesObject || {
+                        facebook: "",
+                        twitter: "",
+                        instagram: "",
+                        linkedin: "",
+                      },
+                    });
                     setActiveModal("social");
                   }}
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-blue-600 hover:bg-blue-50 rounded-lg px-3 py-2 transition-colors"
                 >
-                  Add Links
+                  <Edit2 className="w-5 h-5" />
                 </button>
               </div>
               <div className="space-y-4">
                 {[
-                  {
-                    icon: Facebook,
-                    name: "Facebook",
-                    url: profile?.socialHandles?.facebook,
-                  },
-                  {
-                    icon: Twitter,
-                    name: "Twitter",
-                    url: profile?.socialHandles?.twitter,
-                  },
-                  {
-                    icon: Instagram,
-                    name: "Instagram",
-                    url: profile?.socialHandles?.instagram,
-                  },
-                  {
-                    icon: LinkedIn,
-                    name: "LinkedIn",
-                    url: profile?.socialHandles?.linkedin,
-                  },
-                ].map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center gap-3 p-3 rounded-lg ${
-                      social.url
-                        ? "text-gray-700 hover:bg-gray-50"
-                        : "text-gray-400 cursor-not-allowed"
-                    } transition-colors`}
-                  >
-                    <social.icon className="w-5 h-5" />
-                    <span>{social.name}</span>
-                  </a>
-                ))}
+                  { icon: Facebook, name: "Facebook", platform: "facebook" },
+                  { icon: Twitter, name: "Twitter", platform: "twitter" },
+                  { icon: Instagram, name: "Instagram", platform: "instagram" },
+                  { icon: LinkedIn, name: "LinkedIn", platform: "linkedin" },
+                ].map((social) => {
+                  const socialLink = profile?.socialHandles?.find(
+                    (handle) =>
+                      handle.platform.toLowerCase() ===
+                      social.platform.toLowerCase()
+                  );
+                  const url = socialLink?.url;
+
+                  return (
+                    <a
+                      key={social.platform}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-3 p-3 rounded-lg ${
+                        url
+                          ? "text-gray-700 hover:bg-gray-50"
+                          : "text-gray-400 cursor-not-allowed"
+                      } transition-colors`}
+                    >
+                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <social.icon className="w-5 h-5" />
+                      </div>
+                      <span className="flex-1">{social.name}</span>
+                      {url ? (
+                        <span className="text-sm text-gray-500 truncate max-w-[200px]">
+                          {url.replace(/https?:\/\/(www\.)?/, "")}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">
+                          Not connected
+                        </span>
+                      )}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>

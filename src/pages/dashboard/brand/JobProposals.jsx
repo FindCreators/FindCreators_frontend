@@ -13,6 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getCreatorsByIdArray } from "../../../network/networkCalls";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
+import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
 
 const ProposalSkeleton = () => (
   <div className="p-6 border-b border-gray-200 animate-pulse">
@@ -36,6 +37,7 @@ const ProposalSkeleton = () => (
 );
 
 const ProposalCard = ({ proposal, onHire, onChat }) => {
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const formatFollowers = (count) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
@@ -45,95 +47,108 @@ const ProposalCard = ({ proposal, onHire, onChat }) => {
   const creator = proposal?.creator || {};
 
   return (
-    <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
-      <div className="flex gap-6">
-        <img
-          src={creator.profilePicture || "/api/placeholder/48/48"}
-          alt={creator.fullName}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div className="flex-1">
-          <div className="flex justify-between">
-            <div>
-              <h3 className="text-lg font-medium flex items-center gap-2">
-                {creator.fullName}
-                {creator.isVerified && <span className="text-blue-500">✓</span>}
-              </h3>
-              <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                {creator.location && (
+    <>
+      <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <div className="flex gap-6">
+          <img
+            src={creator.profilePicture || "/api/placeholder/48/48"}
+            alt={creator.fullName}
+            onClick={() => setIsProfileModalOpen(true)}
+            className="w-12 h-12 rounded-full object-cover cursor-pointer"
+          />
+          <div className="flex-1">
+            <div className="flex justify-between">
+              <div>
+                <h3
+                  className="text-lg font-medium flex items-center gap-2 cursor-pointer"
+                  onClick={() => setIsProfileModalOpen(true)}
+                >
+                  {creator.fullName}
+                  {creator.isVerified && (
+                    <span className="text-blue-500">✓</span>
+                  )}
+                </h3>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                  {creator.location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {creator.location.city}, {creator.location.country}
+                    </div>
+                  )}
                   <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {creator.location.city}, {creator.location.country}
+                    <Users className="w-4 h-4" />
+                    {formatFollowers(creator.followers || 0)} followers
                   </div>
-                )}
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {formatFollowers(creator.followers || 0)} followers
+                  {creator.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      {creator.rating}
+                    </div>
+                  )}
                 </div>
-                {creator.rating > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    {creator.rating}
-                  </div>
-                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onChat(proposal)}
+                  className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                  aria-label="Message creator"
+                >
+                  <MessageCircle className="h-5 w-5 text-gray-600" />
+                </button>
+                <button
+                  onClick={() => onHire(proposal)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Hire
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onChat(proposal)}
-                className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                aria-label="Message creator"
-              >
-                <MessageCircle className="h-5 w-5 text-gray-600" />
-              </button>
-              <button
-                onClick={() => onHire(proposal)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Hire
-              </button>
-            </div>
-          </div>
 
-          <p className="text-gray-600 mt-3">{creator.bio}</p>
+            <p className="text-gray-600 mt-3">{creator.bio}</p>
 
-          {creator.skills?.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {creator.skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-4 mt-4 text-sm text-gray-600">
-            <span>Preferred Rate: ${creator.preferredRate}/hr</span>
-            <span>•</span>
-            <span>${creator.totalEarned || 0} earned</span>
-            {creator.languages?.length > 0 && (
-              <>
-                <span>•</span>
-                <span>Speaks: {creator.languages.join(", ")}</span>
-              </>
+            {creator.skills?.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {creator.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
             )}
-          </div>
 
-          <div className="flex gap-4 mt-4 text-sm text-gray-600">
-            <span>Quoted Price: ${proposal.quotedPrice}</span>
-            {proposal.message && (
-              <>
-                <span>•</span>
-                <span>Message: {proposal.message}</span>
-              </>
-            )}
+            <div className="flex gap-4 mt-4 text-sm text-gray-600">
+              <span>Preferred Rate: ${creator.preferredRate}/hr</span>
+              <span>•</span>
+              <span>${creator.totalEarned || 0} earned</span>
+              {creator.languages?.length > 0 && (
+                <>
+                  <span>•</span>
+                  <span>Speaks: {creator.languages.join(", ")}</span>
+                </>
+              )}
+            </div>
+
+            <div className="flex gap-4 mt-4 text-sm text-gray-600">
+              <span>Quoted Price: ${proposal.quotedPrice}</span>
+              {proposal.message && (
+                <>
+                  <span>•</span>
+                  <span>Message: {proposal.message}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <CreatorProfileModal
+        creator={creator}
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+    </>
   );
 };
 

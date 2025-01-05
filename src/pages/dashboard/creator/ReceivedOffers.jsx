@@ -5,6 +5,8 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
+  XCircle,
+  RefreshCcw,
 } from "lucide-react";
 import { makeRequest } from "../../../network/apiHelpers";
 import toast from "react-hot-toast";
@@ -14,6 +16,9 @@ const ReceivedOffers = () => {
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [brandProfiles, setBrandProfiles] = useState({});
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState(null);
+  const [rejectionMessage, setRejectionMessage] = useState("");
 
   useEffect(() => {
     fetchOffers();
@@ -68,6 +73,127 @@ const ReceivedOffers = () => {
     }
   };
 
+  const handleRejectOffer = async (offerId) => {
+    try {
+      if (!rejectionMessage.trim()) {
+        toast.error("Please provide a rejection reason");
+        return;
+      }
+
+      await makeRequest({
+        url: `/api/offer-reject`,
+        method: "POST",
+        data: {
+          offerId: offerId,
+          message: rejectionMessage,
+        },
+      });
+      toast.success("Offer rejected successfully");
+      setRejectionModalOpen(false);
+      setRejectionMessage("");
+      setSelectedOfferId(null);
+      fetchOffers();
+    } catch (error) {
+      console.error("Reject error:", error);
+      toast.error("Failed to reject offer");
+    }
+  };
+
+  const getStatusDisplay = (status) => {
+    const statusConfig = {
+      pending: {
+        icon: AlertCircle,
+        text: "Pending",
+        color: "text-yellow-600 bg-yellow-50",
+      },
+      accepted: {
+        icon: CheckCircle2,
+        text: "Accepted",
+        color: "text-green-600 bg-green-50",
+      },
+      rejected: {
+        icon: XCircle,
+        text: "Rejected",
+        color: "text-red-600 bg-red-50",
+      },
+      revised: {
+        icon: RefreshCcw,
+        text: "Revised",
+        color: "text-blue-600 bg-blue-50",
+      },
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+    const StatusIcon = config.icon;
+
+    return (
+      <span
+        className={`flex items-center gap-1 ${config.color} px-3 py-1 rounded-full`}
+      >
+        <StatusIcon className="w-4 h-4" />
+        {config.text}
+      </span>
+    );
+  };
+
+  const renderActionButtons = (offer) => {
+    if (offer.status === "accepted") return null;
+    if (offer.status === "rejected") return null;
+
+    return (
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setSelectedOfferId(offer.id);
+            setRejectionModalOpen(true);
+          }}
+          className="border border-red-600 text-red-600 px-6 py-2 rounded-lg hover:bg-red-50 transition-colors"
+        >
+          Reject Offer
+        </button>
+        <button
+          onClick={() => handleAcceptOffer(offer.id)}
+          className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          Accept Offer
+        </button>
+      </div>
+    );
+  };
+
+  // Rejection Modal
+  const RejectionModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 className="text-lg font-semibold mb-4">Reject Offer</h3>
+        <textarea
+          value={rejectionMessage}
+          onChange={(e) => setRejectionMessage(e.target.value)}
+          placeholder="Please provide a reason for rejection..."
+          className="w-full p-3 border rounded-lg mb-4 h-32 resize-none"
+        />
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => {
+              setRejectionModalOpen(false);
+              setRejectionMessage("");
+              setSelectedOfferId(null);
+            }}
+            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => handleRejectOffer(selectedOfferId)}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -75,8 +201,6 @@ const ReceivedOffers = () => {
       </div>
     );
   }
-
-  console.log(brandProfiles);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -110,17 +234,7 @@ const ReceivedOffers = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {offer.status === "pending" ? (
-                      <span className="flex items-center gap-1 text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                        <AlertCircle className="w-4 h-4" />
-                        Pending
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Accepted
-                      </span>
-                    )}
+                    {getStatusDisplay(offer.status)}
                   </div>
                 </div>
 
@@ -187,16 +301,14 @@ const ReceivedOffers = () => {
                       </div>
                     )}
 
-                  {offer.status === "pending" && (
-                    <div className="flex justify-end mt-6">
-                      <button
-                        onClick={() => handleAcceptOffer(offer.id)}
-                        className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                      >
-                        Accept Offer
-                      </button>
+                  {offer.status === "rejected" && offer.rejectionMessage && (
+                    <div className="bg-red-50 rounded-lg p-4 text-red-700">
+                      <h3 className="font-medium mb-2">Rejection Reason</h3>
+                      <p>{offer.rejectionMessage}</p>
                     </div>
                   )}
+
+                  {renderActionButtons(offer)}
                 </div>
               </div>
             </div>
@@ -209,6 +321,8 @@ const ReceivedOffers = () => {
           </div>
         )}
       </div>
+
+      {rejectionModalOpen && <RejectionModal />}
     </div>
   );
 };

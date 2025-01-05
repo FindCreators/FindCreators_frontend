@@ -22,6 +22,28 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const recaptchaVerifierRef = useRef(null);
+  const timerRef = useRef(null); // Add timer reference
+
+  // Handle countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      timerRef.current = setInterval(() => {
+        setCountdown((prevCount) => {
+          if (prevCount <= 1) {
+            clearInterval(timerRef.current);
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [countdown]);
 
   useEffect(() => {
     initializeRecaptcha();
@@ -29,6 +51,9 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
   }, []);
@@ -63,14 +88,14 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     setPhoneNumber(value);
     setError("");
   };
+
   const handleLogout = () => {
     dispatch(logout());
     logout();
     navigate("/login", { replace: true });
   };
 
-  const sendOTP = async (e) => {
-    e?.preventDefault();
+  const sendOTP = async (phoneNumber) => {
     setLoading(true);
     setError("");
 
@@ -82,13 +107,14 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       const formattedPhoneNumber = phoneNumber.startsWith("+")
         ? phoneNumber
         : `+${phoneNumber}`;
+
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         formattedPhoneNumber,
         window.recaptchaVerifier
       );
       window.confirmationResult = confirmationResult;
-      setCountdown(30);
+      setCountdown(30); // Reset countdown to 30 seconds
       setStep("OTP");
       toast.success("OTP sent successfully!");
     } catch (error) {
@@ -129,7 +155,7 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
         } else {
           onSuccess?.(result.user);
         }
-        toast.success("Phone number verified successfully!");
+        // toast.success("Phone number verified successfully!");
       }
     } catch (error) {
       const errorMessage =
@@ -144,9 +170,9 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
   };
 
   const resendOTP = async () => {
-    if (countdown > 0) return;
+    if (countdown > 0) return; // Prevent resending if countdown is active
     setOtp("");
-    await sendOTP();
+    await sendOTP(phoneNumber); // This will reset the countdown internally
   };
 
   const resetForm = () => {
@@ -154,14 +180,20 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     setError("");
     setOtp("");
     setPhoneNumber("");
+    setCountdown(0);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     initializeRecaptcha();
   };
 
   return {
     phoneNumber,
+    setPhoneNumber,
     otp,
     setOtp,
     step,
+    setStep,
     error,
     loading,
     countdown,

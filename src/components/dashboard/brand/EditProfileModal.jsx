@@ -48,13 +48,50 @@ const EditProfileModal = ({
         });
         break;
 
+      // Inside EditProfileModal component, update the social media section:
+
       case "social":
-        if (
-          formData.socialHandles &&
-          JSON.stringify(formData.socialHandles) !==
-            JSON.stringify(initialData.socialHandles)
-        ) {
-          updatedFields.socialHandles = formData.socialHandles;
+        const formatSocialHandlesForAPI = (handles) => {
+          const formatted = [];
+          if (handles?.linkedin) {
+            formatted.push({
+              platform: "LinkedIn",
+              url: handles.linkedin,
+              followers: 0,
+              profileId: handles.linkedin.split("/").pop() || "",
+            });
+          }
+          if (handles?.twitter) {
+            formatted.push({
+              platform: "Twitter",
+              url: handles.twitter,
+              followers: 0,
+              profileId: handles.twitter.split("/").pop() || "",
+            });
+          }
+          if (handles?.instagram) {
+            formatted.push({
+              platform: "Instagram",
+              url: handles.instagram,
+              followers: 0,
+              profileId: handles.instagram.split("/").pop() || "",
+            });
+          }
+          if (handles?.facebook) {
+            formatted.push({
+              platform: "Facebook",
+              url: handles.facebook,
+              followers: 0,
+              profileId: handles.facebook.split("/").pop() || "",
+            });
+          }
+          return JSON.stringify(formatted);
+        };
+
+        if (formData.socialHandles) {
+          updatedFields.socialHandles = formatSocialHandlesForAPI(
+            formData.socialHandles
+          );
         }
         break;
     }

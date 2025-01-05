@@ -36,13 +36,17 @@ import MyChat from "./pages/chat/MyChat";
 import BrandProfile from "./pages/dashboard/brand/BrandProfile";
 import CreatorProfile from "./components/dashboard/creator/CreatorProfile";
 import SearchResults from "./pages/dashboard/creator/SearchResults";
+import JobSubmissions from "./pages/dashboard/brand/JobSubmissions";
+import CreatorJobSubmissions from "./pages/dashboard/creator/CreatorJobSubmissions";
+import OffersManagement from "./pages/dashboard/brand/OffersManagement";
+import InstagramTestComponent from "./InstagramTestComponent";
 
 const PrivateRoute = ({ type }) => {
   const { isAuthenticated, userType } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/signup" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (type && userType !== type) {
@@ -101,6 +105,8 @@ function AppContent() {
             <Route path="send-offer" element={<SendOffer />} />
             <Route path="jobs/:jobId/edit" element={<EditJob />} />
             <Route path="in-progress-jobs" element={<InProgressJobs />} />
+            <Route path="/brand/offers" element={<OffersManagement />} />
+            <Route path="/brand/submissions" element={<JobSubmissions />} />
           </Route>
         </Route>
 
@@ -118,6 +124,10 @@ function AppContent() {
             <Route path="my-applications" element={<MyApplications />} />
             <Route path="received-offers" element={<ReceivedOffers />} />
             <Route path="available-search-jobs" element={<SearchResults />} />
+            <Route
+              path="/creator/job-submissions"
+              element={<CreatorJobSubmissions />}
+            />
           </Route>
         </Route>
 
@@ -137,7 +147,8 @@ function App() {
   return (
     <Provider store={store}>
       <BrowserRouter>
-        <AppContent />
+        <InstagramTestComponent />
+        {/* <AppContent /> */}
       </BrowserRouter>
     </Provider>
   );

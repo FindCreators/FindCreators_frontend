@@ -164,6 +164,254 @@ const EditProfileModal = ({ isOpen, onClose, section, profile, onSave }) => {
             />
           </div>
         );
+      case "contact":
+        return (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={formData.phone || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Portfolio URL
+              </label>
+              <input
+                type="url"
+                value={formData.portfolioUrl || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, portfolioUrl: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </>
+        );
+      case "social":
+        return (
+          <div className="space-y-4">
+            {(formData.socialHandles || []).map((handle, index) => (
+              <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Platform
+                  </label>
+                  <select
+                    value={handle.platform || ""}
+                    onChange={(e) => {
+                      const newHandles = [...(formData.socialHandles || [])];
+                      newHandles[index] = {
+                        ...handle,
+                        platform: e.target.value,
+                        profileId: handle.url
+                          ? handle.url.split("/").pop()
+                          : "",
+                      };
+                      setFormData({ ...formData, socialHandles: newHandles });
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Platform</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Youtube">YouTube</option>
+                    <option value="Twitter">Twitter</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    value={handle.url || ""}
+                    onChange={(e) => {
+                      const newHandles = [...(formData.socialHandles || [])];
+                      const url = e.target.value;
+                      newHandles[index] = {
+                        ...handle,
+                        url,
+                        profileId: url.split("/").pop() || "",
+                      };
+                      setFormData({ ...formData, socialHandles: newHandles });
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Followers
+                  </label>
+                  <input
+                    type="number"
+                    value={handle.followers || ""}
+                    onChange={(e) => {
+                      const newHandles = [...(formData.socialHandles || [])];
+                      newHandles[index] = {
+                        ...handle,
+                        followers: parseInt(e.target.value) || 0,
+                      };
+                      setFormData({ ...formData, socialHandles: newHandles });
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newHandles = formData.socialHandles.filter(
+                      (_, i) => i !== index
+                    );
+                    setFormData({ ...formData, socialHandles: newHandles });
+                  }}
+                  className="text-red-600 hover:text-red-700 text-sm"
+                >
+                  Remove Platform
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({
+                  ...formData,
+                  socialHandles: [
+                    ...(formData.socialHandles || []),
+                    { platform: "", url: "", followers: 0, profileId: "" },
+                  ],
+                });
+              }}
+              className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Add Social Platform
+            </button>
+          </div>
+        );
+      case "rates":
+        return (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Minimum Rate
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={formData.minimumRate || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, minimumRate: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+                <select
+                  value={formData.currency || "USD"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, currency: e.target.value })
+                  }
+                  className="w-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preferred Rate
+              </label>
+              <input
+                type="number"
+                value={formData.preferredRate || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, preferredRate: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </>
+        );
+      case "expertise":
+        return (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Skills
+              </label>
+              <textarea
+                value={(formData.skills || []).join(", ")}
+                onChange={(e) => {
+                  const skills = e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  setFormData({ ...formData, skills });
+                }}
+                placeholder="Enter skills separated by commas"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Niche
+              </label>
+              <textarea
+                value={(formData.niche || []).join(", ")}
+                onChange={(e) => {
+                  const niche = e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  setFormData({ ...formData, niche });
+                }}
+                placeholder="Enter niches separated by commas"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Languages
+              </label>
+              <textarea
+                value={(formData.languages || []).join(", ")}
+                onChange={(e) => {
+                  const languages = e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  setFormData({ ...formData, languages });
+                }}
+                placeholder="Enter languages separated by commas"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows={2}
+              />
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -188,7 +436,7 @@ const EditProfileModal = ({ isOpen, onClose, section, profile, onSave }) => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                onSave(formData);
+                onSave(formData, section);
               }}
             >
               {renderFields()}

@@ -1,16 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { usePhoneAuth } from "../../hooks/usePhoneAuth";
 import PhoneInput from "react-phone-number-input";
 import { useDispatch } from "react-redux";
 import "react-phone-number-input/style.css";
 import toast from "react-hot-toast";
 import { login } from "../../redux/actions/authActions";
-import {
-  loginFailure,
-  loginStart,
-  loginSuccess,
-} from "../../redux/slices/authSlice";
+import CustomSpinner from "../../components/common/CustomSpinner";
 
 const Login = () => {
   const [error, setError] = useState("");
@@ -19,9 +15,11 @@ const Login = () => {
 
   const {
     phoneNumber,
+    setPhoneNumber,
     otp,
     setOtp,
     step,
+    setStep,
     loading,
     countdown,
     handlePhoneNumberChange,
@@ -31,7 +29,6 @@ const Login = () => {
   } = usePhoneAuth({
     onSuccess: async (user) => {
       try {
-        // Phone number with +91 prefix
         const cleanPhone = phoneNumber.substring(1); // Remove the + prefix
         const response = await dispatch(login(cleanPhone));
 
@@ -57,15 +54,21 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    if (!phoneNumber || phoneNumber.length < 13) {
-      setError("Please enter a valid phone number");
+    // Remove non-digit characters and ensure the number starts with +91
+    const cleanNumber = phoneNumber.replace(/\D/g, "");
+
+    // Check if the number starts with 91 and has exactly 12 digits (+91 + 10 digits)
+    if (!cleanNumber.startsWith("91") || cleanNumber.length !== 12) {
+      setError("Please enter a valid 10-digit phone number with +91 prefix");
       return;
     }
-    sendOTP();
+
+    // Send the full number with +91 prefix to the API
+    sendOTP(`+${cleanNumber}`); // Ensure the +91 prefix is included
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
       {/* Left Section */}
       <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 text-white flex items-center justify-center p-6 md:p-12">
         <div className="max-w-md text-center md:text-left">
@@ -138,7 +141,7 @@ const Login = () => {
 
       {/* Right Section */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               {step === "PHONE" ? "Sign In" : "Verify Phone"}
@@ -159,9 +162,18 @@ const Login = () => {
                 <PhoneInput
                   international
                   defaultCountry="IN"
-                  value={phoneNumber}
-                  onChange={handlePhoneNumberChange}
-                  className="*:outline-none  w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={phoneNumber || ""}
+                  onChange={(value) => {
+                    const cleanNumber = (value || "").replace(/\D/g, "");
+
+                    if (
+                      cleanNumber.startsWith("91") &&
+                      cleanNumber.length <= 12
+                    ) {
+                      setPhoneNumber(`+${cleanNumber}`);
+                    }
+                  }}
+                  className=" *:outline-none w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
                 />
               </div>
 
@@ -174,15 +186,29 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center justify-center"
               >
-                {loading ? "Sending OTP..." : "Send OTP"}
+                {loading ? (
+                  <CustomSpinner color="#ffffff" size={20} />
+                ) : (
+                  "Send OTP"
+                )}
               </button>
             </form>
           ) : (
             <div className="space-y-4">
               <p className="text-center text-gray-600">
-                Code sent to {phoneNumber}
+                Code sent to {phoneNumber}{" "}
+                <button
+                  onClick={() => {
+                    setOtp("");
+                    handlePhoneNumberChange("");
+                    setStep("PHONE");
+                  }}
+                  className="text-blue-600 hover:text-blue-700 underline transition-colors duration-200"
+                >
+                  Change Number
+                </button>
               </p>
 
               <div className="flex justify-center space-x-2">
@@ -206,8 +232,15 @@ const Login = () => {
                         }
                       }
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" || e.key === "Delete") {
+                        if (index > 0 && !otp[index]) {
+                          document.getElementById(`otp-${index - 1}`)?.focus();
+                        }
+                      }
+                    }}
                     id={`otp-${index}`}
-                    className="w-10 h-10 text-center text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-10 h-10 text-center text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
                   />
                 ))}
               </div>
@@ -221,25 +254,43 @@ const Login = () => {
               <button
                 onClick={verifyOTP}
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center justify-center"
               >
-                {loading ? "Verifying..." : "Verify OTP"}
+                {loading ? (
+                  <CustomSpinner color="#ffffff" size={20} />
+                ) : (
+                  "Verify OTP"
+                )}
               </button>
             </div>
           )}
 
           <div className="text-center mt-4">
             <button
-              onClick={countdown > 0 ? undefined : resendOTP}
+              onClick={resendOTP}
+              disabled={countdown > 0 || loading}
               className={`text-sm ${
                 countdown > 0
-                  ? "text-gray-400"
+                  ? "text-gray-400 cursor-not-allowed"
                   : "text-blue-600 hover:text-blue-700"
-              }`}
+              } transition-colors duration-200`}
             >
               {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
             </button>
           </div>
+
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-blue-600 hover:text-blue-700 transition-colors duration-200"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </div>
+
           <div id="recaptcha-container"></div>
         </div>
       </div>

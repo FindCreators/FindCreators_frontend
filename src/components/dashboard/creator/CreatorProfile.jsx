@@ -40,80 +40,77 @@ const CreatorProfile = () => {
     }
   };
 
-  const handleUpdateProfile = async (data) => {
+  const handleUpdateProfile = async (data, section) => {
     try {
-      const validKeys = [
-        "fullName",
-        "bio",
-        "email",
-        "phone",
-        "profilePicture",
-        "portfolioUrl",
-        "location",
-        "skills",
-        "niche",
-        "languages",
-        "minimumRate",
-        "preferredRate",
-        "currency",
-        "collabPreferences",
-        "socialHandles",
-      ];
+      const sectionKeys = {
+        basic: ["fullName", "bio", "location"],
+        contact: ["email", "phone", "portfolioUrl"],
+        social: ["socialHandles"],
+        expertise: ["skills", "niche", "languages"],
+        rates: ["minimumRate", "preferredRate", "currency"],
+        collab: ["collabPreferences"],
+      };
 
-      // Log the keys in the data object
-      console.log("Data keys:", Object.keys(data));
+      const allowedKeys = sectionKeys[section] || [];
 
-      // Filter the data to only include valid keys and changed values
-      const filteredData = Object.keys(data).reduce((acc, key) => {
-        if (validKeys.includes(key) && data[key] !== profile[key]) {
-          acc[key] = data[key];
+      const sectionData = Object.keys(data).reduce((acc, key) => {
+        if (allowedKeys.includes(key) && data[key] !== undefined) {
+          let value = data[key];
+
+          if (key === "location" && typeof value === "object") {
+            value = JSON.stringify(value);
+          } else if (key === "socialHandles") {
+            const formattedHandles = (value || []).map((handle) => ({
+              platform: handle.platform,
+              url: handle.url,
+              followers: parseInt(handle.followers) || 0,
+              profileId: handle.url.split("/").pop() || handle.profileId || "",
+            }));
+            value = JSON.stringify(formattedHandles);
+          } else if (Array.isArray(value)) {
+            value = JSON.stringify(value);
+          }
+
+          acc.push({
+            key,
+            value: value?.toString() || "",
+          });
         }
         return acc;
-      }, {});
+      }, []);
 
-      console.log("Filtered data:", filteredData);
-
-      // Transform the filteredData object into an array of key-value objects
-      const transformedData = Object.keys(filteredData).map((key) => ({
-        key: key.toString(),
-        value: filteredData[key]?.toString() || "",
-      }));
-
-      console.log("Transformed data:", transformedData);
-
-      const updatedProfile = await updateCreatorProfile(transformedData);
-      setProfile(updatedProfile);
-      toast.success("Profile updated successfully");
-      setActiveModal(null);
+      if (sectionData.length > 0) {
+        const updatedProfile = await updateCreatorProfile(sectionData);
+        setProfile(updatedProfile);
+        toast.success("Profile updated successfully");
+        setActiveModal(null);
+      } else {
+        setActiveModal(null);
+      }
     } catch (error) {
       toast.error("Failed to update profile");
       console.error("Profile update error:", error);
     }
   };
+
   const handleLogout = () => {
     logout();
   };
 
-  const handleImageUpload = async (type, file) => {
+  const handleImageUpload = async (type, imageUrl) => {
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("type", type);
+      const updateData = [
+        {
+          key: type === "profile" ? "profilePicture" : "coverImage",
+          value: imageUrl,
+        },
+      ];
 
-      const response = await fetch("/api/creator/upload-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-      setProfile((prev) => ({
-        ...prev,
-        [type === "profile" ? "profilePicture" : "coverImage"]: data.url,
-      }));
-
-      toast.success("Image uploaded successfully");
+      await updateCreatorProfile(updateData);
+      await fetchProfile();
     } catch (error) {
-      toast.error("Failed to upload image");
+      console.error(`Error updating profile ${type}:`, error);
+      toast.error(`Failed to update profile ${type}`);
     }
   };
 
@@ -144,7 +141,6 @@ const CreatorProfile = () => {
         onUploadPhoto={(file) => handleImageUpload("profile", file)}
       />
 
-      {/* Navigation */}
       <div className="sticky top-0 bg-white shadow-sm z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center space-x-4 overflow-x-auto">
@@ -165,12 +161,11 @@ const CreatorProfile = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {activeSection === "about" && (
           <AboutSection
             profile={profile}
-            onEdit={() => setActiveModal("about")}
+            onEdit={(section) => setActiveModal(section)}
           />
         )}
         {activeSection === "portfolio" && (
@@ -193,7 +188,6 @@ const CreatorProfile = () => {
         )}
       </div>
 
-      {/* Edit Modals */}
       <EditProfileModal
         isOpen={!!activeModal}
         onClose={() => setActiveModal(null)}
