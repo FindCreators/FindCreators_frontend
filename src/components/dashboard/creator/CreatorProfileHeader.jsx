@@ -212,10 +212,6 @@ const CreatorProfileHeader = ({
                     src={`${profile?.profilePicture}?t=${new Date().getTime()}`}
                     alt={profile?.fullName}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = "/api/placeholder/160/160";
-                      e.target.onerror = null;
-                    }}
                   />
                   <button
                     onClick={() => photoInputRef.current.click()}

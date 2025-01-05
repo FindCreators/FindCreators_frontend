@@ -147,8 +147,7 @@ function App() {
   return (
     <Provider store={store}>
       <BrowserRouter>
-        <InstagramTestComponent />
-        {/* <AppContent /> */}
+        <AppContent />
       </BrowserRouter>
     </Provider>
   );

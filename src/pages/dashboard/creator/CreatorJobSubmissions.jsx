@@ -87,12 +87,9 @@ const BrandInfo = ({ brandId }) => {
     <div className="flex items-center gap-2">
       <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
         <img
-          src={brandProfile.logo || "/api/placeholder/32/32"}
+          src={brandProfile.logo}
           alt={brandProfile.name}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src = "/api/placeholder/32/32";
-          }}
         />
       </div>
       <div>
