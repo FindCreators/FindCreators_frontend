@@ -149,7 +149,7 @@ const BrandDashboard = () => {
               onClick={() => navigate("/brand/post-job")}
               className="text-blue-600 hover:text-blue-700 mt-2"
             >
-              Create your first job post →
+              Create more job post →
             </button>
           </div>
         ) : (

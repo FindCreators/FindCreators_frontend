@@ -13,6 +13,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import JobSearch from "../creator/JobSearch"; // Reusing the same search component
+import CreatorSearch from "../brand/CreatorSearch";
 
 const DashboardLayout = ({ userType }) => {
   const location = useLocation();
@@ -53,8 +54,9 @@ const DashboardLayout = ({ userType }) => {
           </div>
 
           {/* Search - Center */}
+          {/* Search - Center */}
           <div className="flex-1 max-w-2xl px-4">
-            <JobSearch />
+            <CreatorSearch />
           </div>
 
           {/* Icons - Right */}

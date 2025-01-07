@@ -1,170 +1,69 @@
-import React, { useState } from "react";
-import { Instagram, Loader2 } from "lucide-react";
-import axios from "axios";
-import toast from "react-hot-toast";
+import React, { useEffect, useState } from "react";
 
-const InstagramTestComponent = () => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [instagramData, setInstagramData] = useState({
-    followers: null,
-    posts: [],
-  });
+const InstagramAuth = () => {
+  const [error, setError] = useState(null);
 
-  const CLIENT_ID = ""; // Your Instagram App ID
-  const REDIRECT_URI = process.env.REACT_APP_INSTAGRAM_REDIRECT_URI; // Your Redirect URI
+  const CLIENT_ID = process.env.REACT_APP_INSTAGRAM_CLIENT_ID;
+  const REDIRECT_URI = process.env.REACT_APP_INSTAGRAM_REDIRECT_URI;
 
-  console.log("CLIENT_ID:", CLIENT_ID);
+  // Correct scopes for Instagram Basic Display API
+  const SCOPE = "user_profile,user_media";
 
-  // Step 1: Connect Instagram Account
-  const handleConnectInstagram = async () => {
-    try {
-      setIsConnecting(true);
+  // Generate Instagram authorization URL
+  const authUrl = `https://api.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
 
-      // Instagram OAuth URL
-      const scope = encodeURIComponent(
-        "instagram_basic,instagram_manage_insights"
-      );
-      const authUrl = `https://www.facebook.com/v16.0/dialog/oauth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code`;
+  useEffect(() => {
+    const handleAuth = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
 
-      // Redirect user to Instagram OAuth
-      window.location.href = authUrl;
-    } catch (error) {
-      console.error("Error connecting to Instagram:", error);
-      toast.error("Failed to initiate Instagram connection. Please try again.");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
+      if (code) {
+        try {
+          const response = await fetch("/api/instagram/exchange-token", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ code }),
+          });
 
-  // Step 2: Fetch Instagram Data (Followers and Posts)
-  const fetchInstagramData = async (accessToken) => {
-    try {
-      // Fetch Instagram profile data
-      const profileResponse = await axios.get(
-        `https://graph.instagram.com/me?fields=id,username,media_count,followers_count&access_token=${accessToken}`
-      );
+          const data = await response.json();
 
-      const { followers_count } = profileResponse.data;
+          if (data.access_token) {
+            localStorage.setItem("instagram_access_token", data.access_token);
+            window.location.href = "/profile";
+          }
+        } catch (err) {
+          setError("Failed to exchange code for access token");
+          console.error(err);
+        }
+      }
+    };
 
-      // Fetch user's media (posts)
-      const mediaResponse = await axios.get(
-        `https://graph.instagram.com/me/media?fields=id,caption,media_url,permalink&access_token=${accessToken}`
-      );
+    handleAuth();
+  }, []);
 
-      const posts = mediaResponse.data.data;
-
-      // Update state with fetched Instagram data
-      setInstagramData({
-        followers: followers_count,
-        posts,
-      });
-
-      toast.success("Instagram data fetched successfully!");
-    } catch (error) {
-      console.error("Error fetching Instagram data:", error);
-      toast.error("Failed to fetch Instagram data. Please try again.");
-    }
-  };
-
-  // Step 3: Handle Instagram Callback
-  const handleInstagramCallback = async (code) => {
-    try {
-      setIsConnecting(true);
-
-      // Exchange code for access token (Backend API required)
-      const response = await axios.post("/api/instagram/exchange-token", {
-        code,
-        redirect_uri: REDIRECT_URI,
-        client_id: CLIENT_ID,
-      });
-
-      const { accessToken } = response.data;
-
-      // Fetch Instagram data using the access token
-      await fetchInstagramData(accessToken);
-    } catch (error) {
-      console.error("Error handling Instagram callback:", error);
-      toast.error("Failed to handle Instagram callback. Please try again.");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  // Step 4: Simulate Callback (For Testing)
-  const simulateInstagramCallback = () => {
-    const simulatedCode = "SIMULATED_AUTHORIZATION_CODE"; // Replace with a valid code for testing
-    handleInstagramCallback(simulatedCode);
-  };
+  if (error) {
+    return (
+      <div className="p-4 bg-red-100 text-red-700 border-l-4 border-red-400 rounded">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Instagram Test Component</h2>
-
-      {/* Connect Instagram Button */}
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <h1 className="text-2xl font-bold mb-6">
+        Connect Your Instagram Account
+      </h1>
       <button
-        onClick={handleConnectInstagram}
-        disabled={isConnecting}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mb-4"
+        onClick={() => (window.location.href = authUrl)}
+        className="px-4 py-2 text-white rounded bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
       >
-        {isConnecting ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <Instagram className="w-5 h-5" />
-        )}
-        <span>Connect Instagram</span>
+        Connect Instagram
       </button>
-
-      {/* Simulate Instagram Callback (Testing Only) */}
-      <button
-        onClick={simulateInstagramCallback}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors mb-4"
-      >
-        Simulate Instagram Callback
-      </button>
-
-      {/* Display Instagram Data */}
-      {instagramData.followers !== null && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">Instagram Data</h3>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Followers</p>
-              <p className="text-xl font-bold">{instagramData.followers}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Posts</p>
-              <p className="text-xl font-bold">{instagramData.posts.length}</p>
-            </div>
-          </div>
-
-          {/* Display Latest Posts */}
-          <h4 className="text-lg font-semibold mb-2">Latest Posts</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {instagramData.posts.map((post) => (
-              <div key={post.id} className="bg-gray-50 p-4 rounded-lg">
-                <img
-                  src={post.media_url}
-                  alt={post.caption || "Instagram Post"}
-                  className="w-full h-48 object-cover rounded-lg mb-2"
-                />
-                <p className="text-sm text-gray-600">
-                  {post.caption || "No caption"}
-                </p>
-                <a
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  View on Instagram
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default InstagramTestComponent;
+export default InstagramAuth;

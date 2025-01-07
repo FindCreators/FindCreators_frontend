@@ -99,18 +99,10 @@ const CreatorProfile = () => {
 
   const handleImageUpload = async (type, imageUrl) => {
     try {
-      const updateData = [
-        {
-          key: type === "profile" ? "profilePicture" : "coverImage",
-          value: imageUrl,
-        },
-      ];
-
-      await updateCreatorProfile(updateData);
       await fetchProfile();
     } catch (error) {
-      console.error(`Error updating profile ${type}:`, error);
-      toast.error(`Failed to update profile ${type}`);
+      console.error(`Error refreshing profile after ${type} update:`, error);
+      toast.error(`Failed to refresh profile after ${type} update`);
     }
   };
 
