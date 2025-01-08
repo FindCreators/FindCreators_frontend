@@ -11,10 +11,22 @@ import {
 import { makeRequest } from "../../../network/apiHelpers";
 import { toast } from "react-hot-toast";
 import { getCreatorProfile } from "../../../network/networkCalls";
+import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
 
-const CreatorInfo = ({ creatorId }) => {
+const CreatorInfo = ({ creatorId, brandId }) => {
   const [creatorProfile, setCreatorProfile] = useState(null);
   const [error, setError] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
+
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const getInitials = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
+  };
 
   useEffect(() => {
     const fetchCreatorProfile = async () => {
@@ -67,25 +79,41 @@ const CreatorInfo = ({ creatorId }) => {
 
   return (
     <div className="flex items-center space-x-3">
-      <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100">
-        <img
-          src={creatorProfile.profilePicture || "/api/placeholder/40/40"}
-          alt={creatorProfile.fullName || "Creator"}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src =
-              "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
-          }}
-        />
+      <div className="relative w-10 h-10">
+        {imageError || !creatorProfile.profilePicture ? (
+          <div
+            className="w-full h-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full"
+            onClick={() => setShowProfile(true)}
+          >
+            {getInitials(creatorProfile.fullName)}
+          </div>
+        ) : (
+          <img
+            onClick={() => setShowProfile(true)}
+            src={creatorProfile.profilePicture}
+            alt={creatorProfile.fullName || "Creator"}
+            className="w-full h-full object-cover cursor-pointer rounded-full cursor-pointer"
+            onError={handleImageError}
+          />
+        )}
       </div>
       <div>
-        <h3 className="font-medium text-gray-900">
+        <h3
+          className="font-medium text-gray-900 cursor-pointer"
+          onClick={() => setShowProfile(true)}
+        >
           {creatorProfile.fullName || "Anonymous Creator"}
         </h3>
         <p className="text-sm text-gray-500">
           {creatorProfile.email || "No email provided"}
         </p>
       </div>
+      <CreatorProfileModal
+        brandId={brandId}
+        creator={creatorProfile}
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
     </div>
   );
 };
@@ -208,7 +236,10 @@ const JobSubmissions = () => {
             className="bg-white rounded-lg shadow-sm p-6"
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-              <CreatorInfo creatorId={submission.creatorId} />
+              <CreatorInfo
+                creatorId={submission.creatorId}
+                brandId={submission.brandId}
+              />
               <span className={getStatusBadge(submission.status)}>
                 {submission.status.charAt(0).toUpperCase() +
                   submission.status.slice(1)}

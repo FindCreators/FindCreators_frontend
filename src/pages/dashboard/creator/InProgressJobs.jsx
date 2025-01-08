@@ -19,6 +19,7 @@ import {
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import JobSubmission from "./JobSubmission";
+import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
 
 const InProgressJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -29,6 +30,8 @@ const InProgressJobs = () => {
   const location = useLocation();
   const [selectedJob, setSelectedJob] = useState(null);
   const isBrandDashboard = location.pathname.includes("/brand/");
+  const [showProfile, setShowProfile] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -103,8 +106,17 @@ const InProgressJobs = () => {
   });
 
   const renderProfile = (job) => {
+    const brandId = job.brandId;
     const profileId = isBrandDashboard ? job.offerToCreatorId : job.brandId;
     const profile = profiles[profileId];
+
+    const handleImageError = () => {
+      setImageError(true);
+    };
+
+    const getInitials = (name) => {
+      return name ? name.charAt(0).toUpperCase() : "";
+    };
 
     if (!profile) return null;
 
@@ -115,9 +127,35 @@ const InProgressJobs = () => {
         </h3>
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-600">
-            <User className="w-4 h-4" />
-            <span>{isBrandDashboard ? profile.name : profile.companyName}</span>
+            {(isBrandDashboard && profile.profilePicture) ||
+            (!isBrandDashboard && profile.logo) ? (
+              <div className="relative w-10 h-10">
+                {imageError || !profile.profilePicture ? (
+                  <div
+                    className="w-full h-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full"
+                    onClick={() => setShowProfile(true)}
+                  >
+                    {getInitials(profile.fullName)}
+                  </div>
+                ) : (
+                  <img
+                    onClick={() => setShowProfile(true)}
+                    src={profile.profilePicture}
+                    alt={profile.fullName || "Creator"}
+                    className="w-full h-full object-cover  rounded-full cursor-pointer"
+                    onError={handleImageError}
+                  />
+                )}
+              </div>
+            ) : null}
+            <span
+              onClick={() => setShowProfile(true)}
+              className="cursor-pointer"
+            >
+              {isBrandDashboard ? profile.fullName : profile.companyName}
+            </span>
           </div>
+
           {profile.email && (
             <div className="flex items-center gap-2 text-gray-600">
               <Mail className="w-4 h-4" />
@@ -131,6 +169,12 @@ const InProgressJobs = () => {
             </div>
           )}
         </div>
+        <CreatorProfileModal
+          brandId={brandId}
+          creator={profile}
+          isOpen={showProfile}
+          onClose={() => setShowProfile(false)}
+        />
       </div>
     );
   };

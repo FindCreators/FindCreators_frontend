@@ -12,14 +12,14 @@ import { useNavigate } from "react-router-dom";
 import { makeRequest } from "../../../network/apiHelpers";
 
 const StatsSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     {[1, 2, 3, 4].map((i) => (
-      <div key={i} className="bg-white rounded-xl shadow-sm p-6">
+      <div key={i} className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         <div className="flex items-center">
-          <div className="bg-gray-200 animate-pulse w-12 h-12 rounded-lg" />
-          <div className="ml-4 flex-1">
+          <div className="bg-gray-200 animate-pulse w-10 sm:w-12 h-10 sm:h-12 rounded-lg" />
+          <div className="ml-3 sm:ml-4 flex-1">
             <div className="h-4 bg-gray-200 animate-pulse rounded w-2/3 mb-2" />
-            <div className="h-6 bg-gray-200 animate-pulse rounded w-1/2" />
+            <div className="h-5 sm:h-6 bg-gray-200 animate-pulse rounded w-1/2" />
           </div>
         </div>
       </div>
@@ -28,13 +28,13 @@ const StatsSkeleton = () => (
 );
 
 const JobCardSkeleton = () => (
-  <div className="py-4 border-b border-gray-200">
-    <div className="flex justify-between items-center">
+  <div className="py-3 sm:py-4 border-b border-gray-200">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
       <div className="flex-1">
         <div className="h-5 bg-gray-200 animate-pulse rounded w-3/4 mb-2" />
         <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2" />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <div className="h-4 bg-gray-200 animate-pulse rounded w-24" />
         <div className="h-4 bg-gray-200 animate-pulse rounded w-20" />
         <div className="h-6 bg-gray-200 animate-pulse rounded w-16" />
@@ -123,9 +123,9 @@ const BrandDashboard = () => {
 
   const renderJobList = (jobs = [], title, emptyMessage, viewAllPath) => (
     <div className="bg-white rounded-xl shadow-sm">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
           {(jobs?.length ?? 0) > 0 && (
             <button
               onClick={() => navigate(viewAllPath)}
@@ -143,7 +143,7 @@ const BrandDashboard = () => {
             ))}
           </div>
         ) : (jobs?.length ?? 0) === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-6 sm:py-8 text-gray-500">
             <p>{emptyMessage}</p>
             <button
               onClick={() => navigate("/brand/post-job")}
@@ -157,13 +157,13 @@ const BrandDashboard = () => {
             {jobs.map((job) => (
               <div
                 key={job?.id}
-                className="py-4 flex justify-between items-center"
+                className="py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0"
               >
                 <div>
                   <h3 className="font-medium text-gray-900">
                     {job?.title || "Untitled Job"}
                   </h3>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
                       <span>
@@ -177,7 +177,7 @@ const BrandDashboard = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <div className="text-sm">
                     <span className="text-gray-500">
                       {job?.applicationsCount || 0} applications
@@ -199,12 +199,12 @@ const BrandDashboard = () => {
   );
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-2xl font-semibold">Brand Dashboard</h1>
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-semibold">Brand Dashboard</h1>
         <button
           onClick={() => navigate("/brand/post-job")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mt-4 md:mt-0"
+          className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Post New Job
         </button>
@@ -213,23 +213,25 @@ const BrandDashboard = () => {
       {isLoading ? (
         <StatsSkeleton />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center">
-                  <div className={`${stat.iconBg} p-3 rounded-lg`}>
-                    <Icon className={`h-6 w-6 ${stat.iconColor}`} />
+                  <div className={`${stat.iconBg} p-2 sm:p-3 rounded-lg`}>
+                    <Icon
+                      className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.iconColor}`}
+                    />
                   </div>
-                  <div className="ml-4">
+                  <div className="ml-3 sm:ml-4">
                     <p className="text-sm font-medium text-gray-600">
                       {stat.label}
                     </p>
-                    <h3 className="text-2xl font-semibold text-gray-900">
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-900">
                       {stat.value}
                     </h3>
                   </div>

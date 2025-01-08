@@ -12,10 +12,21 @@ import {
   Mail,
 } from "lucide-react";
 import { getCreatorProfile } from "../../../network/networkCalls";
+import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
 
-const CreatorInfo = ({ creatorId }) => {
+const CreatorInfo = ({ creatorId, brandId }) => {
   const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showProfile, setShowProfile] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const getInitials = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -60,29 +71,42 @@ const CreatorInfo = ({ creatorId }) => {
   }
 
   return (
-    <div className="flex items-center gap-3 mt-3 p-3 bg-gray-50 rounded-lg">
-      <div className="flex-shrink-0">
-        {creator.profilePicture ? (
-          <img
-            src={creator.profilePicture}
-            alt={creator.name}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <User className="w-6 h-6 text-blue-600" />
+    <div className="flex items-center space-x-3">
+      <div className="relative w-10 h-10">
+        {imageError || !creator.profilePicture ? (
+          <div
+            className="w-full h-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full"
+            onClick={() => setShowProfile(true)}
+          >
+            {getInitials(creator.fullName)}
           </div>
+        ) : (
+          <img
+            onClick={() => setShowProfile(true)}
+            src={creator.profilePicture}
+            alt={creator.fullName || "Creator"}
+            className="w-full h-full object-cover cursor-pointer rounded-full cursor-pointer"
+            onError={handleImageError}
+          />
         )}
       </div>
       <div>
-        <h4 className="font-medium text-gray-900">
-          {creator.fullName || "Creator"}
-        </h4>
-        <div className="flex items-center gap-1 text-sm text-gray-500">
-          <Mail className="w-4 h-4" />
-          <span>{creator.email}</span>
-        </div>
+        <h3
+          className="font-medium text-gray-900 cursor-pointer"
+          onClick={() => setShowProfile(true)}
+        >
+          {creator.fullName || "Anonymous Creator"}
+        </h3>
+        <p className="text-sm text-gray-500">
+          {creator.email || "No email provided"}
+        </p>
       </div>
+      <CreatorProfileModal
+        brandId={brandId}
+        creator={creator}
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
     </div>
   );
 };
@@ -480,7 +504,7 @@ const OffersManagement = () => {
               </div>
             </div>
             <p className="text-gray-600 mt-2">{offer.details}</p>
-            <CreatorInfo creatorId={offer.creatorId} />
+            <CreatorInfo creatorId={offer.creatorId} brandId={offer.brandId} />
 
             {offer.paymentSchedule.type === "milestone" && (
               <div className="mt-4">

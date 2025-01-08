@@ -172,8 +172,8 @@ const SendOffer = () => {
                 className="mr-2"
               />
               <span className="text-gray-700 text-sm">
-                Yes, I understand and agree to the Upwork Terms of Service,
-                including the User Agreement and Privacy Policy.
+                Yes, I understand and agree to the FindCreators Terms of
+                Service, including the User Agreement and Privacy Policy.
               </span>
             </label>
           </div>

@@ -7,6 +7,7 @@ import {
 } from "../../../network/networkCalls";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
 
 const ProposalSkeleton = () => (
   <div className="animate-pulse bg-white rounded-lg shadow-sm p-6">
@@ -25,36 +26,72 @@ const ProposalSkeleton = () => (
 );
 
 const OfferDetails = ({ job, creatorProfile, onUpdateOffer }) => {
+  const [showProfile, setShowProfile] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const getInitials = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
+  };
+
   if (!creatorProfile) return null;
 
   return (
-    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-            <img
-              src={creatorProfile.profilePicture || "/api/placeholder/40/40"}
-              alt={creatorProfile.fullName}
-              className="w-full h-full object-cover"
-            />
+    <>
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 sm:w-12 sm:h-12">
+              {imageError || !creatorProfile.profilePicture ? (
+                <div
+                  className="w-full h-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full"
+                  onClick={() => setShowProfile(true)}
+                >
+                  {getInitials(creatorProfile.fullName)}
+                </div>
+              ) : (
+                <img
+                  onClick={() => setShowProfile(true)}
+                  src={creatorProfile.profilePicture}
+                  alt={creatorProfile.fullName || "Creator"}
+                  className="w-full h-full object-cover rounded-full cursor-pointer"
+                  onError={handleImageError}
+                />
+              )}
+            </div>
+            <div>
+              <button
+                onClick={() => setShowProfile(true)}
+                className="font-medium text-gray-900 hover:text-blue-600 transition-colors text-sm sm:text-base"
+              >
+                Offer given to {creatorProfile.fullName}
+              </button>
+              <p className="text-xs sm:text-sm text-gray-600">
+                {creatorProfile.email}
+              </p>
+            </div>
           </div>
-          <div>
-            <h4 className="font-medium text-gray-900">
-              Offer given to {creatorProfile.fullName}
-            </h4>
-            <p className="text-sm text-gray-600">{creatorProfile.email}</p>
-          </div>
-        </div>
 
-        <button
-          onClick={() => onUpdateOffer(job.offerId)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          <Pencil className="w-4 h-4" />
-          Update Offer
-        </button>
+          <button
+            onClick={() => onUpdateOffer(job.offerId)}
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+            Update Offer
+          </button>
+        </div>
       </div>
-    </div>
+
+      <CreatorProfileModal
+        brandId={job.brandId}
+        creator={creatorProfile}
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
+    </>
   );
 };
 
@@ -267,7 +304,7 @@ const MyJobs = () => {
         <h1 className="text-2xl font-semibold">Your Jobs</h1>
         <button
           onClick={() => navigate("/brand/post-job")}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
           Post a Job
         </button>
@@ -285,15 +322,18 @@ const MyJobs = () => {
       ) : (
         <div className="space-y-4">
           {jobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between">
-                <div>
+            <div
+              key={job.id}
+              className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div className="flex-1">
                   <h3 className="text-lg font-medium">{job.title}</h3>
                   <p className="text-sm text-gray-600 mt-1">
                     Budget: {job.currency} {job.budget?.toLocaleString()}
                   </p>
 
-                  <div className="flex gap-4 mt-2">
+                  <div className="flex flex-col sm:flex-row gap-4 mt-2">
                     <span className="text-sm text-gray-600">
                       {job.applicationsCount || 0} Proposals
                     </span>
@@ -319,7 +359,7 @@ const MyJobs = () => {
 
                 <button
                   onClick={() => handleViewProposals(job)}
-                  className="text-green-600 hover:text-green-700 font-medium"
+                  className="mt-4 sm:mt-0 text-blue-600 hover:text-blue-700 font-medium"
                 >
                   View Proposals
                 </button>

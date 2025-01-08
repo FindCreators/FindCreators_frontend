@@ -1,36 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Globe,
   Briefcase,
   Mail,
   Phone,
   Edit2,
-  Award,
-  TrendingUp,
-  DollarSign,
-  UserCheck,
+  Building2,
+  Building,
+  Users2,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  MapPin,
+  Calendar,
+  ChevronRight,
+  Settings,
+  LogOut,
+  Camera,
+  Upload,
+  Loader2,
+  X,
 } from "lucide-react";
-import { Facebook, Twitter, Instagram, Link as LinkedIn } from "lucide-react";
-import { Building2, Building, Users2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { useAuth } from "../../../hooks/useAuth";
+import KYCVerification from "../../../components/dashboard/brand/KYCVerification";
+import EditProfileModal from "../../../components/dashboard/brand/EditProfileModal";
 import {
   getBrandProfile,
   updateBrandProfile,
-  uploadBrandLogo,
 } from "../../../network/networkCalls";
-import BrandProfileHeader from "../../../components/dashboard/brand/BrandProfileHeader";
-import EditProfileModal from "../../../components/dashboard/brand/EditProfileModal";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../hooks/useAuth";
-import axios from "axios";
 
 const BrandProfile = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const userId = localStorage.getItem("userId");
+  const logoInputRef = useRef(null);
+
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeModal, setActiveModal] = useState(null);
   const [modalData, setModalData] = useState(null);
-  const userId = localStorage.getItem("userId");
-  const { logout } = useAuth();
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [selectedLogoFile, setSelectedLogoFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -40,10 +54,12 @@ const BrandProfile = () => {
     try {
       setIsLoading(true);
       const response = await getBrandProfile(userId);
-      setProfile(response.data[0]);
+      if (response.data && response.data.length > 0) {
+        setProfile(response.data[0]);
+      }
     } catch (error) {
-      toast.error("Failed to load Brand profile");
       console.error("Profile fetch error:", error);
+      toast.error("Failed to load profile data");
     } finally {
       setIsLoading(false);
     }
@@ -65,16 +81,19 @@ const BrandProfile = () => {
         "socialHandles",
         "hiringBudget",
       ];
+
       const filteredData = Object.keys(data).reduce((acc, key) => {
         if (validKeys.includes(key)) {
           acc[key] = data[key];
         }
         return acc;
       }, {});
+
       const transformedData = Object.keys(filteredData).map((key) => ({
         key,
         value: filteredData[key],
       }));
+
       await updateBrandProfile(transformedData);
       toast.success("Profile updated successfully");
       setActiveModal(null);
@@ -85,25 +104,83 @@ const BrandProfile = () => {
     }
   };
 
-  const handleImageUpdate = async (type, imageUrl) => {
-    try {
-      if (type === "logo") {
-        const updateData = [
-          {
-            key: "logo",
-            value: imageUrl,
-          },
-        ];
-        await updateBrandProfile(updateData);
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
       }
-      await fetchProfile(); // Refresh the profile data
-    } catch (error) {
-      console.error(`Error updating profile ${type}:`, error);
-      toast.error(`Failed to update profile ${type}`);
+
+      const maxSize = 2 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("Image size must be less than 2MB");
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      setLogoPreview(previewUrl);
+      setSelectedLogoFile(file);
     }
   };
+
+  const handleImageUpload = async () => {
+    try {
+      if (!selectedLogoFile) {
+        toast.error("Please select an image first");
+        return;
+      }
+
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("image", selectedLogoFile);
+
+      const response = await fetch(
+        "https://findcreators-537037621947.asia-south2.run.app/api/update-profile-image",
+        {
+          method: "PATCH",
+          headers: {
+            "x-access-token": localStorage.getItem("token"),
+          },
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Upload failed");
+      }
+
+      const imageUrl = result.data?.logo || result.logo;
+      await updateBrandProfile([{ key: "logo", value: imageUrl }]);
+
+      setLogoPreview(null);
+      setSelectedLogoFile(null);
+      await fetchProfile();
+
+      toast.success("Logo updated successfully");
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast.error(error.message || "Failed to update logo. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const cancelLogoPreview = () => {
+    setLogoPreview(null);
+    setSelectedLogoFile(null);
+  };
+
   const handleLogout = () => {
     logout();
+    navigate("/login");
+  };
+
+  const handleEditSection = (section, data = null) => {
+    setModalData(data || profile);
+    setActiveModal(section);
   };
 
   if (isLoading) {
@@ -117,322 +194,401 @@ const BrandProfile = () => {
     );
   }
 
-  console.log("Profile data:", profile.companySize);
+  const calculateProfileCompletion = () => {
+    const requiredFields = [
+      "companyName",
+      "industry",
+      "companySize",
+      "description",
+      "email",
+      "phone",
+      "website",
+      "location",
+    ];
+
+    const completedFields = requiredFields.filter((field) =>
+      Boolean(profile?.[field])
+    );
+    return Math.round((completedFields.length / requiredFields.length) * 100);
+  };
+
+  const completionPercentage = calculateProfileCompletion();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <BrandProfileHeader
-        profile={profile}
-        onEdit={() => {
-          setModalData(profile);
-          setActiveModal("basic");
-        }}
-        onUploadSuccess={handleImageUpdate} // New prop for handling successful uploads
-      />
-      <div className="max-w-7xl mx-auto px-4 pt-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Basic Information</h2>
-            <button
-              onClick={() => {
-                setModalData(profile);
-                setActiveModal("basic");
-              }}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            >
-              <Edit2 className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-500">Company Name</label>
-                <p className="text-gray-900 font-medium">
-                  {profile?.companyName || "Not provided"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                <Building className="w-5 h-5 text-purple-600" />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-500">Industry</label>
-                <p className="text-gray-900 font-medium">
-                  {profile?.industry || "Not specified"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                <Users2 className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-500">Company Size</label>
-                <p className="text-gray-900 font-medium">
-                  {profile?.companySize}
-                </p>
-              </div>
+      <div className="bg-white border-b sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl font-semibold">Profile Settings</h1>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-700 flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 -mt-8 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14">
-              {[
-                {
-                  icon: Briefcase,
-                  label: "Active Jobs",
-                  value: profile?.activeJobs?.length || 0,
-                  trend: "+12%",
-                  bgColor: "bg-blue-50",
-                  textColor: "text-blue-600",
-                },
-                {
-                  icon: UserCheck,
-                  label: "Hired Creators",
-                  value: profile?.hiredCreators?.length || 0,
-                  trend: "+5%",
-                  bgColor: "bg-green-50",
-                  textColor: "text-green-600",
-                },
-                {
-                  icon: DollarSign,
-                  label: "Total Spent",
-                  value: `$${profile?.totalSpent || 0}`,
-                  trend: "+18%",
-                  bgColor: "bg-purple-50",
-                  textColor: "text-purple-600",
-                },
-                {
-                  icon: Award,
-                  label: "Success Rate",
-                  value: `${profile?.successRate || 0}%`,
-                  trend: "+3%",
-                  bgColor: "bg-orange-50",
-                  textColor: "text-orange-600",
-                },
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <div
-                    className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center mb-4`}
-                  >
-                    <stat.icon className={`w-6 h-6 ${stat.textColor}`} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-12 gap-8">
+          <div className="col-span-12 lg:col-span-3">
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white relative mb-4">
+                    {logoPreview ? (
+                      <>
+                        <img
+                          src={logoPreview}
+                          alt="Logo Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2">
+                          <button
+                            onClick={handleImageUpload}
+                            disabled={isUploading}
+                            className="p-2 bg-green-600 hover:bg-green-700 rounded-full text-white transition-colors"
+                          >
+                            {isUploading ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <Upload className="w-5 h-5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={cancelLogoPreview}
+                            className="p-2 bg-red-600 hover:bg-red-700 rounded-full text-white transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          src={`${
+                            profile?.logo || "/api/placeholder/96/96"
+                          }?t=${new Date().getTime()}`}
+                          alt="Company Logo"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/api/placeholder/96/96";
+                            e.target.onerror = null;
+                          }}
+                        />
+                        <button
+                          onClick={() => logoInputRef.current.click()}
+                          className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
+                        >
+                          <Camera className="w-8 h-8 text-white" />
+                        </button>
+                      </>
+                    )}
                   </div>
-                  <div className="text-2xl font-semibold mb-1">
-                    {stat.value}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={logoInputRef}
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {profile?.companyName || "Company Name"}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {profile?.industry || "Industry"}
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Building2 className="w-4 h-4" />
+                    <span className="text-sm">
+                      {profile?.companySize} employees
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{stat.label}</span>
-                    <span className="text-sm text-green-600 flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" />
-                      {stat.trend}
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm">
+                      {profile?.location
+                        ? `${profile.location.city}, ${profile.location.country}`
+                        : "Location"}
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">About</h2>
-                <button
-                  onClick={() => {
-                    setModalData(profile);
-                    setActiveModal("about");
-                  }}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-              </div>
-              <p className="text-gray-600 leading-relaxed">
-                {profile?.description || (
-                  <span className="text-gray-400 italic">
-                    No description provided yet. Click edit to add a company
-                    description.
-                  </span>
-                )}
-              </p>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
-              <div className="space-y-6">
-                {(profile?.recentActivity || []).map((activity, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div
-                      className={`w-10 h-10 rounded-lg ${
-                        activity.type === "job" ? "bg-blue-50" : "bg-green-50"
-                      } flex items-center justify-center`}
-                    >
-                      <activity.icon
-                        className={`w-5 h-5 ${
-                          activity.type === "job"
-                            ? "text-blue-600"
-                            : "text-green-600"
-                        }`}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">
-                        {activity.title}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {activity.description}
-                      </p>
-                      <span className="text-xs text-gray-500">
-                        {activity.time}
-                      </span>
-                    </div>
+
+                <div className="mt-6 pt-6 border-t">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-900">
+                      Profile Completion
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {completionPercentage}%
+                    </span>
                   </div>
-                ))}
+                  <div className="mt-2 w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${completionPercentage}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm divide-y">
+                <button
+                  onClick={() => handleEditSection("basic", profile)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
+                >
+                  <span className="text-sm font-medium text-gray-900">
+                    Edit Profile
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
+                <button
+                  // onClick={() => navigate("/brand/settings")}
+                  className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
+                >
+                  <span className="text-sm font-medium text-gray-900">
+                    Company Settings
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
+                <button
+                  // onClick={() => navigate("/brand/notifications")}
+                  className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
+                >
+                  <span className="text-sm font-medium text-gray-900">
+                    Notifications
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
               </div>
             </div>
           </div>
-          <div className="space-y-6 mt-14">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Contact Information</h2>
-                <button
-                  onClick={() => {
-                    setModalData({
-                      email: profile?.email || "",
-                      phone: profile?.phone || "",
-                      website: profile?.website || "",
-                    });
-                    setActiveModal("contact");
-                  }}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-              </div>
 
-              <div className="space-y-4">
-                {[
-                  { icon: Globe, label: "Website", value: profile?.website },
-                  { icon: Mail, label: "Email", value: profile?.email },
-                  { icon: Phone, label: "Phone", value: profile?.phone },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                      <item.icon className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div
-                      className={`flex flex-col ${
-                        item.label === "Website" ? "items-start" : ""
-                      }`}
-                    >
-                      <label className="text-sm text-gray-500">
-                        {item.label}
-                      </label>
-                      {item.label === "Website" && item.value ? (
-                        <a
-                          href={item.value}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {item.value}
-                        </a>
-                      ) : (
-                        <p className="text-gray-900">
-                          {item.value || "Not provided"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+          <div className="col-span-12 lg:col-span-9 space-y-6">
+            <KYCVerification />
+
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6 border-b">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    About Company
+                  </h2>
+                  <button
+                    onClick={() => handleEditSection("about", profile)}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                <p className="text-gray-600 leading-relaxed">
+                  {profile?.description || (
+                    <span className="text-gray-400 italic">
+                      No description provided yet. Click edit to add a company
+                      description.
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Social Media</h2>
-                <button
-                  onClick={() => {
-                    // Transform socialHandles array into an object
-                    const socialHandlesObject = profile?.socialHandles?.reduce(
-                      (acc, handle) => {
-                        acc[handle.platform.toLowerCase()] = handle.url;
-                        return acc;
-                      },
-                      {}
-                    );
-
-                    setModalData({
-                      ...profile,
-                      socialHandles: socialHandlesObject || {
-                        facebook: "",
-                        twitter: "",
-                        instagram: "",
-                        linkedin: "",
-                      },
-                    });
-                    setActiveModal("social");
-                  }}
-                  className="text-blue-600 hover:bg-blue-50 rounded-lg px-3 py-2 transition-colors"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { icon: Facebook, name: "Facebook", platform: "facebook" },
-                  { icon: Twitter, name: "Twitter", platform: "twitter" },
-                  { icon: Instagram, name: "Instagram", platform: "instagram" },
-                  { icon: LinkedIn, name: "LinkedIn", platform: "linkedin" },
-                ].map((social) => {
-                  const socialLink = profile?.socialHandles?.find(
-                    (handle) =>
-                      handle.platform.toLowerCase() ===
-                      social.platform.toLowerCase()
-                  );
-                  const url = socialLink?.url;
-
-                  return (
-                    <a
-                      key={social.platform}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-3 p-3 rounded-lg ${
-                        url
-                          ? "text-gray-700 hover:bg-gray-50"
-                          : "text-gray-400 cursor-not-allowed"
-                      } transition-colors`}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm">
+                <div className="p-6 border-b">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Contact Information
+                    </h2>
+                    <button
+                      onClick={() =>
+                        handleEditSection("contact", {
+                          email: profile?.email || "",
+                          phone: profile?.phone || "",
+                          website: profile?.website || "",
+                        })
+                      }
+                      className="text-blue-600 hover:text-blue-700"
                     >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-4">
+                  {[
+                    { icon: Globe, label: "Website", value: profile?.website },
+                    { icon: Mail, label: "Email", value: profile?.email },
+                    { icon: Phone, label: "Phone", value: profile?.phone },
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <social.icon className="w-5 h-5" />
+                        <item.icon className="w-4 h-4 text-gray-600" />
                       </div>
-                      <span className="flex-1">{social.name}</span>
-                      {url ? (
-                        <span className="text-sm text-gray-500 truncate max-w-[200px]">
-                          {url.replace(/https?:\/\/(www\.)?/, "")}
-                        </span>
+                      <div>
+                        <label className="text-xs text-gray-500">
+                          {item.label}
+                        </label>
+                        <p className="text-sm text-gray-900">
+                          {item.value || "Not provided"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm">
+                <div className="p-6 border-b">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Social Media
+                    </h2>
+                    <button
+                      onClick={() => {
+                        const socialHandlesObject =
+                          profile?.socialHandles?.reduce((acc, handle) => {
+                            acc[handle.platform.toLowerCase()] = handle.url;
+                            return acc;
+                          }, {});
+
+                        handleEditSection("social", {
+                          ...profile,
+                          socialHandles: socialHandlesObject || {
+                            facebook: "",
+                            twitter: "",
+                            instagram: "",
+                            linkedin: "",
+                          },
+                        });
+                      }}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-4">
+                  {[
+                    {
+                      icon: Linkedin,
+                      platform: "LinkedIn",
+                      url: profile?.socialHandles?.find(
+                        (h) => h.platform.toLowerCase() === "linkedin"
+                      )?.url,
+                    },
+                    {
+                      icon: Twitter,
+                      platform: "Twitter",
+                      url: profile?.socialHandles?.find(
+                        (h) => h.platform.toLowerCase() === "twitter"
+                      )?.url,
+                    },
+                    {
+                      icon: Facebook,
+                      platform: "Facebook",
+                      url: profile?.socialHandles?.find(
+                        (h) => h.platform.toLowerCase() === "facebook"
+                      )?.url,
+                    },
+                    {
+                      icon: Instagram,
+                      platform: "Instagram",
+                      url: profile?.socialHandles?.find(
+                        (h) => h.platform.toLowerCase() === "instagram"
+                      )?.url,
+                    },
+                  ].map((social, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <social.icon className="w-4 h-4 text-gray-600" />
+                      </div>
+                      {social.url ? (
+                        <a
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {social.url.replace(/https?:\/\/(www\.)?/, "")}
+                        </a>
                       ) : (
                         <span className="text-sm text-gray-400">
                           Not connected
                         </span>
                       )}
-                    </a>
-                  );
-                })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6 border-b">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Recent Activity
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="space-y-6">
+                  {(profile?.recentActivity || []).length > 0 ? (
+                    profile.recentActivity.map((activity, index) => (
+                      <div key={index} className="flex gap-4">
+                        <div
+                          className={`w-10 h-10 rounded-lg ${
+                            activity.type === "job"
+                              ? "bg-blue-50"
+                              : "bg-green-50"
+                          } flex items-center justify-center flex-shrink-0`}
+                        >
+                          <activity.icon
+                            className={`w-5 h-5 ${
+                              activity.type === "job"
+                                ? "text-blue-600"
+                                : "text-green-600"
+                            }`}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">
+                            {activity.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {activity.description}
+                          </p>
+                          <span className="text-xs text-gray-500 block mt-1">
+                            {activity.time}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Calendar className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500">No recent activity</p>
+                      <button
+                        onClick={() => navigate("/brand/post-job")}
+                        className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      >
+                        Post More jobs
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
       <EditProfileModal
         isOpen={!!activeModal}
         onClose={() => {
@@ -443,14 +599,6 @@ const BrandProfile = () => {
         initialData={modalData}
         onSave={handleUpdateProfile}
       />
-      <div className="fixed bottom-4 right-4">
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
     </div>
   );
 };

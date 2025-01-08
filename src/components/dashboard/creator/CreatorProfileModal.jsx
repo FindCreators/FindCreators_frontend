@@ -1,213 +1,249 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   X,
   MapPin,
   Users,
   Star,
-  Globe,
+  Activity,
   Clock,
-  DollarSign,
   Mail,
   Phone,
-  Link,
-  Calendar,
-  Activity,
-  Award,
-  Facebook,
-  Twitter,
   Instagram,
+  Calendar,
+  Twitter,
   Linkedin,
+  Youtube,
+  LinkedinIcon,
+  TwitterIcon,
+  YoutubeIcon,
 } from "lucide-react";
 
 const CreatorProfileModal = ({ creator, isOpen, onClose }) => {
+  const [imageError, setImageError] = useState(false);
+
   if (!isOpen) return null;
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
+  const handleImageError = () => {
+    setImageError(true);
   };
 
-  const formatSocialHandle = (handle) => {
-    if (!handle) return null;
-    return handle.startsWith("@") ? handle : `@${handle}`;
+  const getInitials = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
   };
-
-  const getSocialIcon = (platform) => {
-    switch (platform.toLowerCase()) {
-      case "facebook":
-        return Facebook;
-      case "twitter":
-        return Twitter;
-      case "instagram":
-        return Instagram;
-      case "linkedin":
-        return Linkedin;
-      default:
-        return Link;
-    }
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+        <div className="p-4 flex justify-between items-center border-b border-gray-200">
           <h2 className="text-xl font-semibold">Creator Profile</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="text-gray-500 hover:text-gray-700"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Cover Photo */}
-        <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-
-        {/* Main Content */}
-        <div className="px-8 pb-8">
-          {/* Profile Header Section */}
-          <div className="relative flex flex-col md:flex-row gap-6 -mt-12 mb-8">
+        {/* Content */}
+        <div className="px-6 pb-6">
+          {/* Profile Section */}
+          <div className="flex flex-col sm:flex-row gap-6 mt-6">
             <div className="flex-shrink-0">
-              <img
-                src={creator.profilePicture || "/api/placeholder/120/120"}
-                alt={creator.fullName}
-                className="w-32 h-32 rounded-xl border-4 border-white object-cover shadow-lg"
-              />
+              <div className="relative w-10 h-10">
+                {imageError || !creator.profilePicture ? (
+                  <div className="w-16 h-16  flex items-center justify-center  bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">
+                    {getInitials(creator.fullName)}
+                  </div>
+                ) : (
+                  <img
+                    src={creator.profilePicture}
+                    alt={creator.fullName || "Creator"}
+                    className="w-full h-full object-cover rounded-full "
+                    onError={handleImageError}
+                  />
+                )}
+              </div>
             </div>
-            <div className="flex-1 pt-4">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+
+            <div className="flex-1 sm:pt-0">
+              <div className="flex flex-wrap justify-between gap-4 md:ml-8 ml-0 mt-2 md:mt-0 items-start">
                 <div>
-                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                  <h1 className="text-2xl font-bold mb-2">
                     {creator.fullName}
-                    {creator.isVerified && (
-                      <span className="text-blue-500 bg-blue-50 p-1 rounded-full">
-                        <Award className="w-5 h-5" />
-                      </span>
-                    )}
                   </h1>
-                  <div className="flex flex-wrap gap-4 mt-2 text-gray-600">
-                    {creator.location?.city && creator.location?.country && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {creator.location.city}, {creator.location.country}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {creator.followers || 0} followers
-                    </div>
-                    {creator.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        {creator.rating} ({creator.reviewCount} reviews)
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      Joined {formatDate(creator.createdAt)}
-                    </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span>
+                      {creator.location?.city || "Unknown"},{" "}
+                      {creator.location?.country || "Unknown"}
+                    </span>
+                    <span className="mx-2">•</span>
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      Joined{" "}
+                      {new Date(creator.createdAt).toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
                   </div>
                 </div>
+
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Message
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button className="px-6 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     Follow
                   </button>
                 </div>
               </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                {[
+                  {
+                    icon: Star,
+                    label: "Rating",
+                    value: `${creator.rating || 5}(${
+                      creator.reviewCount || 1
+                    } reviews)`,
+                  },
+                  {
+                    icon: Users,
+                    label: "Followers",
+                    value: creator.followers || 0,
+                  },
+                  {
+                    icon: Activity,
+                    label: "Engagement Rate",
+                    value: `${creator.engagementRate || 0}%`,
+                  },
+                  {
+                    icon: Clock,
+                    label: "Minimum Rate",
+                    value: `$${creator.minimumRate || 500}`,
+                  },
+                ].map((stat, idx) => (
+                  <div key={idx} className="bg-gray-50 p-3 rounded-xl">
+                    <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
+                      <stat.icon className="w-4 h-4" />
+                      {stat.label}
+                    </div>
+                    <div className="font-semibold">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Grid Layout for Content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Main Content - Left 2 Columns */}
-            <div className="md:col-span-2 space-y-6">
-              {/* About Section */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+            {/* Left Side */}
+            <div className="col-span-2 space-y-6">
+              {/* About */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold mb-4">About</h3>
-                <p className="text-gray-600 whitespace-pre-wrap">
-                  {creator.bio || "No bio available"}
+                <p className="text-gray-600">
+                  {creator.bio || "No bio provided"}
                 </p>
               </div>
 
-              {/* Skills Section */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold mb-4">Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {creator.skills?.length > 0 ? (
-                    creator.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-gray-500">No skills listed</p>
-                  )}
+              {/* Skills & Expertise */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Skills & Expertise
+                </h3>
+                <div className="space-y-4">
+                  {/* Skills */}
+                  <div>
+                    <h4 className="text-sm text-gray-600 mb-2">Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {creator.skills?.map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Niche */}
+                  <div>
+                    <h4 className="text-sm text-gray-600 mb-2">Niche</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {creator.niche?.map((item, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Portfolio Section */}
-              {creator.portfolioUrl && (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold mb-4">Portfolio</h3>
-                  <a
-                    href={creator.portfolioUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center gap-2"
-                  >
-                    <Link className="w-4 h-4" />
-                    View Portfolio
-                  </a>
-                </div>
-              )}
             </div>
 
-            {/* Sidebar - Right Column */}
+            {/* Right Side */}
             <div className="space-y-6">
-              {/* Contact Information */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Contact Information
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Mail className="w-4 h-4" />
-                    {creator.email}
+              {/* Contact & Social */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold mb-4">Contact & Social</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">{creator.email}</span>
                   </div>
                   {creator.phone && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Phone className="w-4 h-4" />
-                      {creator.phone}
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">{creator.phone}</span>
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* Work Preferences */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold mb-4">Work Preferences</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <DollarSign className="w-4 h-4" />
-                    Preferred Rate: ${creator.preferredRate}/hr
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="w-4 h-4" />
-                    Total Earnings: ${creator.totalEarned}
-                  </div>
-                  {creator.engagementRate > 0 && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Activity className="w-4 h-4" />
-                      Engagement Rate: {creator.engagementRate}%
+                  {creator.socialHandles?.length > 0 && (
+                    <div className="pt-4 mt-4 border-t border-gray-100">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">
+                        Social Media
+                      </h4>
+                      <div className="space-y-3">
+                        {creator.socialHandles.map((social, idx) => (
+                          <a
+                            key={idx}
+                            href={social.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              {social.platform.toLowerCase() === "instagram" ? (
+                                <Instagram className="w-4 h-4 text-gray-400" />
+                              ) : social.platform.toLowerCase() ===
+                                "youtube" ? (
+                                <YoutubeIcon className="w-4 h-4 text-gray-400" />
+                              ) : social.platform.toLowerCase() ===
+                                "twitter" ? (
+                                <TwitterIcon className="w-4 h-4 text-gray-400" />
+                              ) : social.platform.toLowerCase() ===
+                                "linkedin" ? (
+                                <LinkedinIcon className="w-4 h-4 text-gray-400" />
+                              ) : null}
+                              <span className="text-gray-600">
+                                {social.platform}
+                              </span>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {social.followers.toLocaleString()} followers
+                            </span>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -215,39 +251,20 @@ const CreatorProfileModal = ({ creator, isOpen, onClose }) => {
 
               {/* Languages */}
               {creator.languages?.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="bg-white rounded-2xl border border-gray-100 p-6">
                   <h3 className="text-lg font-semibold mb-4">Languages</h3>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Globe className="w-4 h-4" />
-                    {creator.languages.join(", ")}
+                  <div className="flex flex-wrap gap-2">
+                    {creator.languages.map((lang, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                      >
+                        {lang}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
-
-              {/* Social Handles */}
-              {creator.socialHandles &&
-                Object.keys(creator.socialHandles).length > 0 && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold mb-4">Social Media</h3>
-                    <div className="space-y-3">
-                      {Object.entries(creator.socialHandles).map(
-                        ([platform, handle]) => {
-                          if (!handle) return null;
-                          const IconComponent = getSocialIcon(platform);
-                          return (
-                            <div
-                              key={platform}
-                              className="flex items-center gap-2 text-gray-600"
-                            >
-                              <IconComponent className="w-4 h-4" />
-                              {formatSocialHandle(handle)}
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
-                )}
             </div>
           </div>
         </div>

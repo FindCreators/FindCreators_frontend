@@ -55,6 +55,15 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error("Request canceled"));
     }
 
+    console.error("Response interceptor error:", error);
+    if (error.response && error.response.status === 401) {
+      // Clear user authentication data
+      localStorage.removeItem("token");
+      localStorage.removeItem("profile");
+
+      toast.error("Session expired. Please log in again.");
+    }
+
     if (error.code === "ECONNABORTED") {
       toast.error("Request timeout. Please try again.");
       return Promise.reject(new Error("Request timeout"));
