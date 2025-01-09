@@ -93,6 +93,34 @@ const CreatorProfile = () => {
     }
   };
 
+  const handleInstagramVerify = async (instagramId) => {
+    try {
+      const socialHandlesData = [
+        ...(profile.socialHandles || []).filter(
+          (handle) => handle.platform !== "Instagram"
+        ),
+        {
+          platform: "Instagram",
+          url: `https://instagram.com/${instagramId}`,
+          followers: 0, // This can be updated later with actual data
+          profileId: instagramId,
+        },
+      ];
+
+      await handleUpdateProfile(
+        {
+          socialHandles: socialHandlesData,
+        },
+        "social"
+      );
+
+      toast.success("Instagram account added successfully!");
+    } catch (error) {
+      toast.error("Failed to verify Instagram account");
+      console.error("Instagram verification error:", error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -131,6 +159,7 @@ const CreatorProfile = () => {
         onEdit={() => setActiveModal("basic")}
         onUploadCover={(file) => handleImageUpload("cover", file)}
         onUploadPhoto={(file) => handleImageUpload("profile", file)}
+        onInstagramVerify={handleInstagramVerify}
       />
 
       <div className="sticky top-0 bg-white shadow-sm z-10">

@@ -13,11 +13,86 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+const InstagramVerificationModal = ({
+  isOpen,
+  onClose,
+  onVerify,
+  existingInstagramHandle,
+}) => {
+  const [instagramId, setInstagramId] = useState(existingInstagramHandle || "");
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Verify Your Instagram
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Enter your Instagram username to verify your account and boost your
+          credibility.
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (instagramId.trim()) {
+              onVerify(instagramId.trim());
+            } else {
+              toast.error("Please enter a valid Instagram username");
+            }
+          }}
+        >
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Instagram Username
+            </label>
+            <div className="flex items-center">
+              <span className="mr-2 text-gray-500">@</span>
+              <input
+                type="text"
+                value={instagramId}
+                onChange={(e) => setInstagramId(e.target.value)}
+                placeholder="yourinstagram"
+                className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Verify
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const CreatorProfileHeader = ({
   profile,
   onEdit,
   onUploadCover,
   onUploadPhoto,
+  onInstagramVerify,
 }) => {
   const photoInputRef = useRef(null);
   const coverInputRef = useRef(null);
@@ -26,6 +101,8 @@ const CreatorProfileHeader = ({
   const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
   const [selectedCoverFile, setSelectedCoverFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isInstagramVerificationOpen, setIsInstagramVerificationOpen] =
+    useState(false);
 
   const handleImageUpload = async (type) => {
     try {
@@ -121,6 +198,11 @@ const CreatorProfileHeader = ({
       setSelectedCoverFile(null);
     }
   };
+
+  // Find existing Instagram handle
+  const existingInstagramHandle = profile?.socialHandles?.find(
+    (handle) => handle.platform === "Instagram"
+  )?.profileId;
 
   return (
     <div className="relative min-h-[400px]">
@@ -231,7 +313,7 @@ const CreatorProfileHeader = ({
             />
           </div>
 
-          {/* Rest of the content remains the same */}
+          {/* Profile Details */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col items-center md:flex-row md:items-center gap-3 mb-2">
               <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white">
@@ -280,15 +362,45 @@ const CreatorProfileHeader = ({
                 <a
                   key={platform.name}
                   href="#"
-                  className={`p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors ${platform.color}`}
+                  className={`p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors relative ${platform.color}`}
                 >
                   <platform.icon className="w-5 h-5" />
+                  {platform.name === "Instagram" &&
+                    !existingInstagramHandle && (
+                      <button
+                        onClick={() => setIsInstagramVerificationOpen(true)}
+                        className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
+                      >
+                        +
+                      </button>
+                    )}
                 </a>
               ))}
             </div>
+
+            {/* Instagram Verification Call to Action */}
+            {!existingInstagramHandle && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setIsInstagramVerificationOpen(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition-colors"
+                >
+                  Verify Your Instagram
+                </button>
+              </div>
+            )}
+
+            {/* Instagram Verification Status */}
+            {existingInstagramHandle && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                <p className="text-yellow-700">
+                  🕰 Your profile verification is under review.
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Stats Preview */}
+          {/* Stats */}
           <div className="flex flex-wrap justify-center md:justify-start gap-4 sm:gap-6 text-white/90 text-center">
             <div className="flex-1 min-w-[80px]">
               <div className="text-lg sm:text-xl md:text-2xl font-bold">
@@ -324,6 +436,16 @@ const CreatorProfileHeader = ({
           </div>
         </div>
       </div>
+
+      <InstagramVerificationModal
+        isOpen={isInstagramVerificationOpen}
+        onClose={() => setIsInstagramVerificationOpen(false)}
+        onVerify={(instagramId) => {
+          onInstagramVerify(instagramId);
+          setIsInstagramVerificationOpen(false);
+        }}
+        existingInstagramHandle={existingInstagramHandle}
+      />
     </div>
   );
 };
