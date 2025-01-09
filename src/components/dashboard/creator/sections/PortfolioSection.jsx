@@ -1,14 +1,54 @@
-import React from "react";
-import { Plus, ExternalLink } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, ExternalLink, X } from "lucide-react";
+import AddWorkModal from "./AddWorkModal";
 
-const PortfolioSection = ({ profile }) => {
+const PortfolioSection = ({ profile, onEdit }) => {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newWork, setNewWork] = useState({
+    title: "",
+    description: "",
+    image: "",
+    link: "",
+    tags: [],
+  });
+
   const portfolioItems = profile?.portfolio || [];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const updatedPortfolio = [...portfolioItems, newWork];
+    onEdit({ portfolio: updatedPortfolio }, "portfolio");
+    setShowAddModal(false);
+    setNewWork({ title: "", description: "", image: "", link: "", tags: [] });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewWork((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleTagsChange = (e) => {
+    const tags = e.target.value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    setNewWork((prevState) => ({
+      ...prevState,
+      tags,
+    }));
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Portfolio</h2>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Add Work
         </button>
@@ -59,6 +99,16 @@ const PortfolioSection = ({ profile }) => {
         <div className="text-center py-12 bg-white rounded-xl">
           <p className="text-gray-500">No portfolio items added yet.</p>
         </div>
+      )}
+
+      {showAddModal && (
+        <AddWorkModal
+          newWork={newWork}
+          handleInputChange={handleInputChange}
+          handleTagsChange={handleTagsChange}
+          handleSubmit={handleSubmit}
+          onClose={() => setShowAddModal(false)}
+        />
       )}
     </div>
   );

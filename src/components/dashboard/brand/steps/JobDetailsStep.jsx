@@ -1,9 +1,11 @@
-// src/components/dashboard/brand/steps/JobDetailsStep.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Calendar, Tag } from "lucide-react";
 
 const JobDetailsStep = ({ formData, handleInputChange }) => {
-  // Local state for form fields to prevent focus issues
+  const descriptionRef = useRef(null);
+  const countryRef = useRef(null);
+  const cityRef = useRef(null);
+
   const [localFormData, setLocalFormData] = useState({
     title: formData.title,
     description: formData.description,
@@ -13,11 +15,12 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
       country: formData.location.country,
       city: formData.location.city,
     },
-    attachment: formData.attachment,
+    attachments: formData.attachments,
     attachmentLink: formData.attachmentLink,
   });
 
-  // Update local state when prop changes
+  const [skillInput, setSkillInput] = useState(formData.skills.join(", "));
+
   useEffect(() => {
     setLocalFormData({
       title: formData.title,
@@ -28,12 +31,12 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         country: formData.location.country,
         city: formData.location.city,
       },
-      attachment: formData.attachment,
+      attachments: formData.attachments,
       attachmentLink: formData.attachmentLink,
     });
+    setSkillInput(formData.skills.join(", "));
   }, [formData]);
 
-  // Handle immediate local updates
   const handleLocalChange = (e) => {
     const { name, value } = e.target;
     if (name.includes(".")) {
@@ -45,22 +48,24 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
           [child]: value,
         },
       }));
+      handleInputChange(e);
     } else {
       setLocalFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
+      if (name === "description") {
+        handleInputChange(e);
+      }
     }
   };
 
-  // Update parent state on blur
   const handleBlur = (e) => {
-    const { name, value } = e.target;
-    handleInputChange(e);
+    const { name } = e.target;
+    if (!name.includes(".") && name !== "description") {
+      handleInputChange(e);
+    }
   };
-
-  // Handle skills separately
-  const [skillInput, setSkillInput] = useState(formData.skills.join(", "));
 
   const handleSkillsChange = (e) => {
     setSkillInput(e.target.value);
@@ -86,22 +91,30 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
       handleSkillsBlur();
     }
   };
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setLocalFormData((prevData) => ({
+      ...prevData,
+      attachments: [...prevData.attachments, ...files],
+    }));
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
       <h2 className="text-3xl font-semibold mb-8">
         Tell us about your project
       </h2>
+
       <div className="space-y-6">
         <div>
           <label
-            htmlFor="title"
+            htmlFor="title-input"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             Title
           </label>
           <input
-            id="title"
+            id="title-input"
             name="title"
             type="text"
             value={localFormData.title}
@@ -114,17 +127,17 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
 
         <div>
           <label
-            htmlFor="description"
+            htmlFor="description-input"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             Description
           </label>
           <textarea
-            id="description"
+            ref={descriptionRef}
+            id="description-input"
             name="description"
             value={localFormData.description}
             onChange={handleLocalChange}
-            onBlur={handleBlur}
             rows={6}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Describe your project requirements, goals, and expectations..."
@@ -133,13 +146,13 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
 
         <div>
           <label
-            htmlFor="category"
+            htmlFor="category-input"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             Category
           </label>
           <select
-            id="category"
+            id="category-input"
             name="category"
             value={localFormData.category}
             onChange={(e) => {
@@ -158,10 +171,14 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="skills-input"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Skills Required
           </label>
           <input
+            id="skills-input"
             type="text"
             name="skills"
             placeholder="Enter skills separated by commas"
@@ -186,55 +203,74 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="country-input"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Location
           </label>
           <div className="grid grid-cols-2 gap-4">
             <input
+              ref={countryRef}
+              id="country-input"
               type="text"
               name="location.country"
               placeholder="Country"
               value={localFormData.location.country}
               onChange={handleLocalChange}
-              onBlur={handleBlur}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <input
+              ref={cityRef}
+              id="city-input"
               type="text"
               name="location.city"
               placeholder="City"
               value={localFormData.location.city}
               onChange={handleLocalChange}
-              onBlur={handleBlur}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Attachment
+        <div className="mb-4">
+          <label
+            htmlFor="attachment-file-input"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Upload Attachments
           </label>
           <input
+            id="attachment-file-input"
             type="file"
-            name="attachment"
-            onChange={(e) => {
-              handleLocalChange({
-                target: {
-                  name: "attachment",
-                  value: e.target.files[0],
-                },
-              });
-            }}
+            multiple
+            onChange={handleFileChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
+        <div className="mb-4">
+          <h3 className="text-sm font-medium text-gray-700">
+            Uploaded Attachments
+          </h3>
+          <ul className="list-disc list-inside">
+            {localFormData.attachments.map((file, index) => (
+              <li key={index} className="text-sm text-gray-600">
+                {file.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="attachment-link-input"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Attachment Link
           </label>
           <input
+            id="attachment-link-input"
             type="text"
             name="attachmentLink"
             value={localFormData.attachmentLink}

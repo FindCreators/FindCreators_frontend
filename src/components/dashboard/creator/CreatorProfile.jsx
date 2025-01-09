@@ -49,6 +49,7 @@ const CreatorProfile = () => {
         expertise: ["skills", "niche", "languages"],
         rates: ["minimumRate", "preferredRate", "currency"],
         collab: ["collabPreferences"],
+        portfolio: ["portfolio"],
       };
 
       const allowedKeys = sectionKeys[section] || [];
@@ -192,7 +193,7 @@ const CreatorProfile = () => {
         {activeSection === "portfolio" && (
           <PortfolioSection
             profile={profile}
-            onEdit={() => setActiveModal("portfolio")}
+            onEdit={(data) => handleUpdateProfile(data, "portfolio")}
           />
         )}
         {activeSection === "stats" && (

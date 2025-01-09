@@ -1,4 +1,3 @@
-// src/components/dashboard/brand/steps/JobPreview.jsx
 import React from "react";
 import { ChevronLeft, MapPin, Calendar, Clock, Tag } from "lucide-react";
 
@@ -93,7 +92,7 @@ const JobPreview = ({ formData, setStep, handleSubmit }) => {
         </div>
         <div>
           <h3 className="text-xl font-semibold mb-2">Attachments</h3>
-          {formData.attachments.length > 0 ? (
+          {formData.attachments && formData.attachments.length > 0 ? (
             <div className="flex flex-col gap-2">
               {formData.attachments.map((attachment, index) => (
                 <div key={index} className="flex items-center gap-2">

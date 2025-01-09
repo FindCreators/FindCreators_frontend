@@ -151,7 +151,7 @@ const JobDetails = () => {
                       const attachmentUrl =
                         typeof attachment === "string"
                           ? attachment
-                          : attachment?.url || ""; // Ensure URL is always a string
+                          : attachment?.fileUrl || ""; // Ensure URL is always a string
 
                       return attachmentUrl ? (
                         <div key={index} className="flex items-center gap-3">
