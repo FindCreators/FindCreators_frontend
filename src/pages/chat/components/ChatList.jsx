@@ -65,8 +65,9 @@ const ChatList = ({ user, client, setChannel }) => {
           const isOnline = channel.state.members[channel.data.id]?.user?.online;
 
           // Update channel data based on user type
-          const channelName = userType === "creator" ? channel.data.brandName : channel.data.creatorName;
-          const channelImage = userType === "creator" ? channel.data.brandImage : channel.data.creatorImage;
+          console.log("channel",channel)
+          const channelName = userType === "creator" ? channel.data.data.brandName : channel.data.data.creatorName;
+          const channelImage = userType === "creator" ? channel.data.data.brandImage : channel.data.data.creatorImage;
 
           return (
             <div

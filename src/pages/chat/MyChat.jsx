@@ -34,15 +34,13 @@ const createStreamUser = async (userId, name, image) => {
   }
 };
 
-const initializeStreamChannel = async (client, channelData, userType) => {
+const initializeStreamChannel = async (client, channelData) => {
   try {
-    const currentUserId = client.userID;
-    const otherUserId =
-      userType === "brand" ? channelData.creatorId : channelData.brandId;
 
     const channelId = `${channelData.brandId}-${channelData.creatorId}`;
     const channel = client.channel("messaging", channelId, {
       members: [channelData.brandId, channelData.creatorId],
+      data:channelData,
       name: "FindCreators Chat",
     });
 
@@ -81,37 +79,23 @@ const MyChat = () => {
         };
         setUser(currentUser);
 
+        if(channelData){
+          await createStreamUser(
+            channelData.creatorId,
+            channelData.creatorName,
+            channelData.creatorImage
+          );
+        }
+
         if (client.userID) await client.disconnectUser();
 
         await client.connectUser(currentUser, tokenData.token);
 
         if (channelData) {
-          const otherUserId =
-            userType === "brand" ? channelData.creatorId : channelData.brandId;
-          const otherUserName =
-            userType === "brand"
-              ? channelData.creatorName
-              : channelData.brandName;
-          const otherUserImage =
-            userType === "brand"
-              ? channelData.creatorImage
-              : channelData.brandImage;
-
-          await createStreamUser(
-            channelData.creatorId,
-            tokenData.name,
-            tokenData.image
-          );
-          await createStreamUser(
-            channelData.creatorId,
-            otherUserName,
-            otherUserImage
-          );
 
           const newChannel = await initializeStreamChannel(
             client,
-            channelData,
-            userType
+            channelData
           );
           if (mounted) setChannel(newChannel);
         }
