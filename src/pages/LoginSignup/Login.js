@@ -216,6 +216,7 @@ const Login = () => {
                   <input
                     key={index}
                     type="text"
+                    inputMode="numeric"
                     maxLength="1"
                     value={otp[index] || ""}
                     onChange={(e) => {
