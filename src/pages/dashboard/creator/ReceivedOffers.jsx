@@ -241,9 +241,9 @@ const ReceivedOffers = () => {
                 <div className="mt-4 space-y-4">
                   <div className="flex items-center gap-6 text-gray-600">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-5 h-5" />
+                      {/* <DollarSign className="w-5 h-5" /> */}
                       <span className="font-semibold">
-                        {offer.amount.toLocaleString()} USD
+                        {offer.amount.toLocaleString()} INR
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

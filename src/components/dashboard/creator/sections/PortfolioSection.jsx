@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Plus, ExternalLink, X } from "lucide-react";
+import { Plus, ExternalLink, Pencil, X } from "lucide-react";
 import AddWorkModal from "./AddWorkModal";
 
 const PortfolioSection = ({ profile, onEdit }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
   const [newWork, setNewWork] = useState({
     title: "",
     description: "",
@@ -14,11 +16,28 @@ const PortfolioSection = ({ profile, onEdit }) => {
 
   const portfolioItems = profile?.portfolio || [];
 
+  const openEditModal = (item, index) => {
+    setNewWork(item);
+    setEditMode(true);
+    setEditIndex(index);
+    setShowAddModal(true);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedPortfolio = [...portfolioItems, newWork];
+
+    let updatedPortfolio;
+    if (editMode) {
+      updatedPortfolio = [...portfolioItems];
+      updatedPortfolio[editIndex] = newWork;
+    } else {
+      updatedPortfolio = [...portfolioItems, newWork];
+    }
+
     onEdit({ portfolio: updatedPortfolio }, "portfolio");
     setShowAddModal(false);
+    setEditMode(false);
+    setEditIndex(null);
     setNewWork({ title: "", description: "", image: "", link: "", tags: [] });
   };
 
@@ -46,7 +65,17 @@ const PortfolioSection = ({ profile, onEdit }) => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Portfolio</h2>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            setEditMode(false);
+            setNewWork({
+              title: "",
+              description: "",
+              image: "",
+              link: "",
+              tags: [],
+            });
+            setShowAddModal(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -90,6 +119,13 @@ const PortfolioSection = ({ profile, onEdit }) => {
                   </span>
                 ))}
               </div>
+              <button
+                onClick={() => openEditModal(item, index)}
+                className="mt-2 text-blue-600 hover:underline flex items-center gap-1"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit
+              </button>
             </div>
           </div>
         ))}

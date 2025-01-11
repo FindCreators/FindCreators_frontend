@@ -40,6 +40,7 @@ import JobSubmissions from "./pages/dashboard/brand/JobSubmissions";
 import CreatorJobSubmissions from "./pages/dashboard/creator/CreatorJobSubmissions";
 import OffersManagement from "./pages/dashboard/brand/OffersManagement";
 import InstagramTestComponent from "./InstagramTestComponent";
+import BrandJobDetails from "./pages/dashboard/brand/BrandJobDetails";
 
 const PrivateRoute = ({ type }) => {
   const { isAuthenticated, userType } = useAuth();
@@ -100,6 +101,7 @@ function AppContent() {
             <Route index element={<BrandDashboard />} />
             <Route path="profile" element={<BrandProfile />} />
             <Route path="jobs" element={<MyJobs />} />
+            <Route path="jobs/:id" element={<BrandJobDetails />} />
             <Route path="post-job" element={<PostJob />} />
             <Route path="jobs/:jobId/proposals" element={<JobProposals />} />
             <Route path="send-offer" element={<SendOffer />} />

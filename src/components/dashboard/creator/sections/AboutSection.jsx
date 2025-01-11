@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const AboutSection = ({ profile, onEdit }) => {
-  const formatCurrency = (amount, currency = "USD") => {
+  const formatCurrency = (amount, currency = "INR") => {
     if (!amount) return "Not specified";
     return `${currency} ${parseFloat(amount).toLocaleString()}`;
   };

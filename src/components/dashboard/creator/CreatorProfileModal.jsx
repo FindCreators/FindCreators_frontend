@@ -20,9 +20,6 @@ import {
 
 const CreatorProfileModal = ({ creator, isOpen, onClose }) => {
   const [imageError, setImageError] = useState(false);
-
-  if (!isOpen) return null;
-
   const handleImageError = () => {
     setImageError(true);
   };
