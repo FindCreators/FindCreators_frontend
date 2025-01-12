@@ -46,7 +46,7 @@ const ApplyJobModal = ({ isOpen, onClose, onApply, jobId }) => {
           </div>
           <button
             onClick={handleApply}
-            className="w-full bg-green-500 text-white py-2.5 rounded-full hover:bg-green-600 transition-colors"
+            className="w-full bg-blue-500 text-white py-2.5 rounded-full hover:bg-blue-600 transition-colors"
           >
             Submit Application
           </button>

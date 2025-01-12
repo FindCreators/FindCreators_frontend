@@ -380,7 +380,7 @@ const CreatorProfileHeader = ({
 
             {/* Instagram Verification Call to Action */}
             {!existingInstagramHandle && (
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-left">
                 <button
                   onClick={() => setIsInstagramVerificationOpen(true)}
                   className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition-colors"

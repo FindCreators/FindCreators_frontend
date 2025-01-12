@@ -86,7 +86,7 @@ const JobSearch = () => {
             setShowSuggestions(true);
           }}
           onKeyPress={(e) => e.key === "Enter" && handleSearch(query)}
-          placeholder="Search for creators..."
+          placeholder="Search for Jobs..."
           className="w-full px-3 sm:px-4 py-2 pl-9 sm:pl-10 pr-8 sm:pr-10 text-sm sm:text-base 
                    border border-gray-300 rounded-lg focus:outline-none focus:ring-2 
                    focus:ring-blue-500 focus:border-transparent"

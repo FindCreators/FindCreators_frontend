@@ -277,7 +277,7 @@ const MyJobs = () => {
               />
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -285,8 +285,8 @@ const MyJobs = () => {
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
-              <option value="closed">Completed</option>
-              <option value="pending">In Progress</option>
+              <option value="in progress">In Progress</option>
+              <option value="completed">Completed</option>
             </select>
             <select
               value={sortBy}

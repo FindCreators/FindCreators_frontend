@@ -139,11 +139,20 @@ const JobPreview = ({ formData, setStep, handleSubmit }) => {
                 <h4 className="text-sm font-medium text-gray-500 mb-2">
                   Description
                 </h4>
-                <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap">
-                  {formData.description || "No description provided"}
+                <div className="prose prose-sm max-w-none text-gray-600">
+                  {formData.description ? (
+                    formData.description.split("\n").map((paragraph, index) => (
+                      <p key={index} className="mb-2">
+                        {paragraph}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 italic">
+                      No description provided
+                    </p>
+                  )}
                 </div>
               </div>
-
               {formData.skills && formData.skills.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-2">

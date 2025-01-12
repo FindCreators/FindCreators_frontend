@@ -422,25 +422,37 @@ const BrandProfile = () => {
                   </div>
                 </div>
                 <div className="p-6 space-y-4">
-                  {[
-                    { icon: Globe, label: "Website", value: profile?.website },
-                    { icon: Mail, label: "Email", value: profile?.email },
-                    { icon: Phone, label: "Phone", value: profile?.phone },
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <item.icon className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-500">
-                          {item.label}
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {item.value || "Not provided"}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                    <p className="text-gray-900">
+                      {profile?.email || "Not provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Phone</h3>
+                    <p className="text-gray-900">
+                      {profile?.phone || "Not provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Website
+                    </h3>
+                    <p className="text-gray-900">
+                      {profile?.website ? (
+                        <a
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          {profile.website}
+                        </a>
+                      ) : (
+                        "Not provided"
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
 

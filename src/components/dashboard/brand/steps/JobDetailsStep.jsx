@@ -63,6 +63,8 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         [name]: value,
       }));
     }
+    // Add immediate parent state update
+    handleInputChange(e); // This will update parent state immediately
   };
 
   const handleBlur = (e) => {

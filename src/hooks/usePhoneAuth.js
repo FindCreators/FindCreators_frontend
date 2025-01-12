@@ -2,14 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../configs/firebaseConfig";
 import toast from "react-hot-toast";
-import {
-  loginFailure,
-  loginStart,
-  loginSuccess,
-} from "../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { login } from "../redux/actions/authActions";
 import { logout } from "../network/apiClient";
 
 export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
@@ -22,9 +16,34 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const recaptchaVerifierRef = useRef(null);
-  const timerRef = useRef(null); // Add timer reference
+  const timerRef = useRef(null);
+  const recaptchaContainerRef = useRef(null);
 
-  // Handle countdown timer
+  useEffect(() => {
+    // Create recaptcha container if it doesn't exist
+    if (!document.getElementById("recaptcha-container")) {
+      recaptchaContainerRef.current = document.createElement("div");
+      recaptchaContainerRef.current.id = "recaptcha-container";
+      document.body.appendChild(recaptchaContainerRef.current);
+    }
+
+    initializeRecaptcha();
+
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      // Clean up recaptcha container
+      if (recaptchaContainerRef.current) {
+        document.body.removeChild(recaptchaContainerRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (countdown > 0) {
       timerRef.current = setInterval(() => {
@@ -45,29 +64,25 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     };
   }, [countdown]);
 
-  useEffect(() => {
-    initializeRecaptcha();
-    return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-
   const initializeRecaptcha = async () => {
     try {
+      // Clear existing recaptcha instance
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
+      }
+
+      // Ensure container exists
+      const container = document.getElementById("recaptcha-container");
+      if (!container) {
+        throw new Error("Recaptcha container not found");
       }
 
       const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
-        callback: () => console.log("reCAPTCHA verified"),
+        callback: () => {
+          console.log("reCAPTCHA verified");
+        },
         "expired-callback": () => {
           setError("reCAPTCHA expired. Please try again.");
           initializeRecaptcha();
@@ -78,6 +93,7 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       window.recaptchaVerifier = verifier;
       recaptchaVerifierRef.current = verifier;
     } catch (error) {
+      console.error("Error initializing reCAPTCHA:", error);
       setError(
         "Error initializing verification system. Please refresh the page."
       );
@@ -106,27 +122,26 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     setError("");
 
     try {
-      // Initialize reCAPTCHA if not already initialized
+      // Ensure recaptcha is initialized
       if (!window.recaptchaVerifier) {
         await initializeRecaptcha();
       }
 
-      // Ensure phone number is properly formatted
       const formattedPhoneNumber = phoneNumber.startsWith("+")
         ? phoneNumber
         : `+${phoneNumber}`;
 
-      // Get the current reCAPTCHA verifier instance
       const verifier = window.recaptchaVerifier;
+      if (!verifier) {
+        throw new Error("Verification system not initialized");
+      }
 
-      // Attempt to send OTP
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         formattedPhoneNumber,
         verifier
       );
 
-      // Store confirmation result and update UI
       window.confirmationResult = confirmationResult;
       setCountdown(30);
       setStep("OTP");
@@ -134,7 +149,6 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     } catch (error) {
       console.error("Error sending OTP:", error);
 
-      // Handle specific error cases
       let errorMessage = "Error sending OTP. Please try again.";
       if (error.code === "auth/invalid-phone-number") {
         errorMessage =
@@ -146,7 +160,7 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       setError(errorMessage);
       toast.error(errorMessage);
 
-      // Reinitialize reCAPTCHA on error
+      // Attempt to reinitialize recaptcha
       try {
         await initializeRecaptcha();
       } catch (recaptchaError) {
@@ -172,7 +186,6 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       }
 
       const result = await window.confirmationResult.confirm(otp);
-      console.log(result);
       if (result.user) {
         if (isSignup) {
           const savedData = JSON.parse(localStorage.getItem("signupData"));
@@ -181,7 +194,6 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
         } else {
           onSuccess?.(result.user);
         }
-        // toast.success("Phone number verified successfully!");
       }
     } catch (error) {
       const errorMessage =
@@ -196,9 +208,9 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
   };
 
   const resendOTP = async () => {
-    if (countdown > 0) return; // Prevent resending if countdown is active
+    if (countdown > 0) return;
     setOtp("");
-    await sendOTP(phoneNumber); // This will reset the countdown internally
+    await sendOTP();
   };
 
   const resetForm = () => {

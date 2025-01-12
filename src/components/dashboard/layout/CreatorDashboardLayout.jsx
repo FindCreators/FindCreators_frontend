@@ -75,6 +75,13 @@ const CreatorDashboardLayout = () => {
 
           {/* Icons - Right */}
           <div className="w-48 flex items-center justify-end space-x-6">
+            <Link
+              to="/chat"
+              className="text-gray-400 hover:text-gray-600 focus:outline-none transition duration-150"
+              aria-label="Messages"
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Link>
             <button
               className="text-gray-400 hover:text-gray-600 focus:outline-none transition duration-150"
               aria-label="Notifications"
@@ -106,6 +113,13 @@ const CreatorDashboardLayout = () => {
             </a>
 
             <div className="flex items-center space-x-4">
+              <Link
+                to="/chat"
+                className="text-gray-400 hover:text-gray-600 focus:outline-none transition duration-150"
+                aria-label="Messages"
+              >
+                <MessageCircle className="h-6 w-6" />
+              </Link>
               <button
                 className="text-gray-400 hover:text-gray-600"
                 aria-label="Notifications"

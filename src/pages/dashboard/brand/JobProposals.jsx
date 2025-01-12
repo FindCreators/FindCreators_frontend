@@ -115,14 +115,18 @@ const ProposalCard = ({ proposal, onHire, onChat }) => {
         <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           <div className="relative w-12 h-12 shrink-0">
             {imageError || !creator.profilePicture ? (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">
+              <div
+                className="w-full h-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full"
+                onClick={() => setIsProfileModalOpen(true)}
+              >
                 {getInitials(creator.fullName)}
               </div>
             ) : (
               <img
                 src={creator.profilePicture}
+                onClick={() => setIsProfileModalOpen(true)}
                 alt={creator.fullName || "Creator"}
-                className="w-full h-full object-cover rounded-full"
+                className="w-full h-full object-cover rounded-full cursor-pointer"
                 onError={() => setImageError(true)}
               />
             )}
