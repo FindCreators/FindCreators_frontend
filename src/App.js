@@ -64,7 +64,7 @@ const RedirectBasedOnAuth = () => {
     return <Navigate to={`/${userType}`} replace />;
   }
 
-  return <Navigate to="/signup" replace />;
+  return <Navigate to="/login" replace />;
 };
 
 function AppContent() {

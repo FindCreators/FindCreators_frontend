@@ -65,16 +65,18 @@ export const createJobListing = async (jobData) => {
 };
 
 export const getBrandListings = async (page, limit, filters = {}) => {
+  const brandId = localStorage.getItem("userId");
   const queryParams = new URLSearchParams({
     page,
     limit,
+    brandId, // Include brandId in the query parameters
   });
 
   if (filters.status && filters.status !== "all") {
     queryParams.append("status", filters.status);
   }
   if (filters.categories?.length > 0) {
-    queryParams.append("categories", filters.categories.join(","));
+    queryParams.append("category", filters.categories.join(","));
   }
   if (filters.budget) {
     queryParams.append("budget", filters.budget);
