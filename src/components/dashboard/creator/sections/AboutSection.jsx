@@ -10,6 +10,7 @@ import {
   Twitter,
   Linkedin,
   DollarSign,
+  IndianRupee,
 } from "lucide-react";
 
 const AboutSection = ({ profile, onEdit }) => {
@@ -262,7 +263,7 @@ const AboutSection = ({ profile, onEdit }) => {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-600" />
+                <IndianRupee className="w-4 h-4 text-gray-600" />
                 <span className="text-gray-600">Minimum Rate</span>
               </div>
               <span className="font-medium">
@@ -271,7 +272,7 @@ const AboutSection = ({ profile, onEdit }) => {
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-600" />
+                <IndianRupee className="w-4 h-4 text-gray-600" />
                 <span className="text-gray-600">Preferred Rate</span>
               </div>
               <span className="font-medium">

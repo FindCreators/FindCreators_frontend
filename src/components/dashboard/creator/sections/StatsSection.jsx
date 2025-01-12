@@ -1,5 +1,11 @@
 import React from "react";
-import { TrendingUp, Users, DollarSign, Award } from "lucide-react";
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  Award,
+  IndianRupee,
+} from "lucide-react";
 
 const StatsSection = ({ profile }) => {
   const stats = [
@@ -14,7 +20,7 @@ const StatsSection = ({ profile }) => {
       value: `${profile?.engagementRate || 0}%`,
     },
     {
-      icon: DollarSign,
+      icon: IndianRupee,
       label: "Total Earnings",
       value: `${profile?.currency} ${profile?.totalEarnings || 0}`,
     },

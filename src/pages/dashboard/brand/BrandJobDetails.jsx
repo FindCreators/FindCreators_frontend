@@ -13,6 +13,7 @@ import {
   Tag,
   Users,
   Link as LinkIcon,
+  IndianRupee,
 } from "lucide-react";
 import { makeRequest } from "../../../network/apiHelpers";
 import toast from "react-hot-toast";
@@ -234,7 +235,7 @@ const BrandJobDetails = () => {
         {/* Quick Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <InfoCard
-            icon={DollarSign}
+            icon={IndianRupee}
             title="Budget"
             value={`${job.currency} ${job.budget?.toLocaleString()}`}
           />

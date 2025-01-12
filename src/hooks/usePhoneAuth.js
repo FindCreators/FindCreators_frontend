@@ -95,38 +95,63 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
     navigate("/login", { replace: true });
   };
 
-  const sendOTP = async (phoneNumber) => {
+  const sendOTP = async () => {
+    if (!phoneNumber) {
+      setError("Phone number is required.");
+      toast.error("Phone number is required.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
+      // Initialize reCAPTCHA if not already initialized
       if (!window.recaptchaVerifier) {
         await initializeRecaptcha();
       }
 
+      // Ensure phone number is properly formatted
       const formattedPhoneNumber = phoneNumber.startsWith("+")
         ? phoneNumber
         : `+${phoneNumber}`;
 
+      // Get the current reCAPTCHA verifier instance
+      const verifier = window.recaptchaVerifier;
+
+      // Attempt to send OTP
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         formattedPhoneNumber,
-        window.recaptchaVerifier
+        verifier
       );
+
+      // Store confirmation result and update UI
       window.confirmationResult = confirmationResult;
-      setCountdown(30); // Reset countdown to 30 seconds
+      setCountdown(30);
       setStep("OTP");
       toast.success("OTP sent successfully!");
     } catch (error) {
-      const errorMessage =
-        error.code === "auth/invalid-phone-number"
-          ? "Invalid phone number format."
-          : error.code === "auth/too-many-requests"
-          ? "Too many attempts. Please try again later."
-          : "Error sending OTP. Please try again.";
+      console.error("Error sending OTP:", error);
+
+      // Handle specific error cases
+      let errorMessage = "Error sending OTP. Please try again.";
+      if (error.code === "auth/invalid-phone-number") {
+        errorMessage =
+          "Invalid phone number. Please enter a valid phone number.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many attempts. Please try again later.";
+      }
+
       setError(errorMessage);
-      onError?.(errorMessage);
-      await initializeRecaptcha();
+      toast.error(errorMessage);
+
+      // Reinitialize reCAPTCHA on error
+      try {
+        await initializeRecaptcha();
+      } catch (recaptchaError) {
+        console.error("Error reinitializing reCAPTCHA:", recaptchaError);
+      }
     } finally {
       setLoading(false);
     }
@@ -147,6 +172,7 @@ export const usePhoneAuth = ({ onSuccess, onError, isSignup = false } = {}) => {
       }
 
       const result = await window.confirmationResult.confirm(otp);
+      console.log(result);
       if (result.user) {
         if (isSignup) {
           const savedData = JSON.parse(localStorage.getItem("signupData"));

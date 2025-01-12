@@ -1,43 +1,48 @@
 // src/components/dashboard/brand/PostJobFlow.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import OpenAI from "openai";
 
 import AIWelcomeStep from "./steps/AIWelcomeStep";
 import AIPromptStep from "./steps/AIPromptStep";
-import ProjectTypeStep from "./steps/ProjectTypeStep";
 import JobDetailsStep from "./steps/JobDetailsStep";
 import BudgetStep from "./steps/BudgetStep";
 import JobPreview from "./steps/JobPreview";
 import { createJobListing } from "../../../network/networkCalls";
 
+const TOTAL_STEPS = 5;
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
+
 const PostJobFlow = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     useAI: false,
-    projectType: "",
     title: "",
     description: "",
     category: "",
     skills: [],
-    budget: 0,
+    budget: "",
     currency: "INR",
     duration: "",
     location: {
       city: "",
       country: "",
     },
-    deadline: "",
     startDate: "",
     endDate: "",
     attachments: [],
     attachmentLink: "",
-    tags: [],
   });
 
   const handleInputChange = (e) => {
@@ -59,24 +64,59 @@ const PostJobFlow = () => {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (jobTitle, additionalRequirements) => {
     setIsGenerating(true);
     try {
-      // Here you would typically call an AI service
-      // For now, we'll simulate it
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert HR professional who creates detailed job postings.",
+          },
+          {
+            role: "user",
+            content: `Create a detailed job posting for the position of "${jobTitle}". 
+            Additional requirements: ${additionalRequirements || ""}
+            
+            Include:
+            1. A clear job title
+            2. Detailed job description
+            3. Required skills and qualifications (at least 5 relevant skills)
+            4. Job category (choose from: Tech, Fashion, Lifestyle, Beauty, Food)
+            
+            Format the response as JSON with the following structure:
+            {
+              "title": "Job title",
+              "description": "Detailed description",
+              "category": "Job category",
+              "skills": ["skill1", "skill2", ...]
+            }`,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
 
+      const jobData = JSON.parse(completion.choices[0].message.content);
+
+      // Update form data with AI-generated content
       setFormData((prev) => ({
         ...prev,
-        title: "Content Creation for Product Launch",
-        description: aiPrompt,
-        category: "Tech",
-        skills: ["Content Creation", "Social Media Marketing"],
+        title: jobData.title,
+        description: jobData.description,
+        category: jobData.category,
+        skills: jobData.skills,
+        useAI: true,
       }));
 
-      setStep(3);
+      toast.success("Job details generated successfully!");
+      setStep(3); // Move to JobDetailsStep
     } catch (error) {
+      console.error("Error generating job post:", error);
       toast.error("Failed to generate job post");
+      throw error;
     } finally {
       setIsGenerating(false);
     }
@@ -93,16 +133,11 @@ const PostJobFlow = () => {
       return false;
     }
 
-    // Validate dates if provided
-    const dates = {
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      deadline: formData.deadline,
-    };
-
-    for (const [key, value] of Object.entries(dates)) {
-      if (value && isNaN(new Date(value).getTime())) {
-        toast.error(`Invalid ${key} format`);
+    if (formData.startDate && formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (end < start) {
+        toast.error("End date must be after start date");
         return false;
       }
     }
@@ -110,54 +145,56 @@ const PostJobFlow = () => {
     return true;
   };
 
-  const formatDates = (data) => {
-    const now = new Date();
-    const oneMonthFromNow = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      now.getDate()
-    );
-
-    return {
-      ...data,
-      startDate: data.startDate
-        ? new Date(data.startDate).toISOString()
-        : now.toISOString(),
-      endDate: data.endDate
-        ? new Date(data.endDate).toISOString()
-        : oneMonthFromNow.toISOString(),
-      deadline: data.deadline
-        ? new Date(data.deadline).toISOString()
-        : oneMonthFromNow.toISOString(),
-    };
-  };
-
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
     try {
-      if (!validateForm()) return;
-
-      const jobData = formatDates({
-        ...formData,
-        budget: Number(formData.budget), // Ensure budget is a number
-      });
-
       const formPayload = new FormData();
 
-      // Add simple fields to FormData
-      for (const [key, value] of Object.entries(jobData)) {
+      // Helper function to format dates to ISO string
+      const formatDate = (dateStr) => {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        // Set time to midnight UTC
+        date.setUTCHours(0, 0, 0, 0);
+        return date.toISOString(); // Will format as "YYYY-MM-DDT00:00:00.000Z"
+      };
+
+      // Add all fields to FormData with special handling for certain fields
+      Object.entries(formData).forEach(([key, value]) => {
         if (key === "location") {
-          formPayload.append("location.country", value.country);
+          // Handle nested location object
+          formPayload.append("location.country", value.country || "");
           formPayload.append("location.city", value.city || "");
-        } else if (key === "skills" || key === "tags") {
-          formPayload.append(key, value.join(","));
+        } else if (key === "skills") {
+          // Join array of skills with commas
+          formPayload.append(
+            "skills",
+            Array.isArray(value) ? value.join(",") : value
+          );
         } else if (key === "attachments") {
-          value.forEach((file) => {
-            formPayload.append("attachments", file);
-          });
+          // Handle file attachments
+          if (Array.isArray(value)) {
+            value.forEach((file) => {
+              formPayload.append("attachments", file);
+            });
+          }
+        } else if (key === "startDate") {
+          // Format start date
+          formPayload.append("startDate", formatDate(value));
+        } else if (key === "endDate") {
+          // Format end date
+          formPayload.append("endDate", formatDate(value));
         } else {
+          // Handle all other fields normally
           formPayload.append(key, value);
         }
-      }
+      });
+
+      // Log the formatted dates for verification
+      console.log("Formatted startDate:", formPayload.get("startDate"));
+      console.log("Formatted endDate:", formPayload.get("endDate"));
 
       await createJobListing(formPayload);
       toast.success("Job posted successfully!");
@@ -165,61 +202,62 @@ const PostJobFlow = () => {
     } catch (error) {
       console.error("Error posting job:", error);
       toast.error(error.message || "Failed to post job");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const steps = [
-    () => <AIWelcomeStep setFormData={setFormData} setStep={setStep} />,
-    () => (
-      <AIPromptStep
-        aiPrompt={aiPrompt}
-        setAiPrompt={setAiPrompt}
-        isGenerating={isGenerating}
-        handleGenerate={handleGenerate}
-      />
-    ),
-    () => (
-      <ProjectTypeStep
-        formData={formData}
-        setFormData={setFormData}
-        setStep={setStep}
-      />
-    ),
-    () => (
-      <JobDetailsStep
-        formData={formData}
-        handleInputChange={handleInputChange}
-      />
-    ),
-    () => (
-      <BudgetStep formData={formData} handleInputChange={handleInputChange} />
-    ),
-    () => (
-      <JobPreview
-        formData={formData}
-        setStep={setStep}
-        handleSubmit={handleSubmit}
-      />
-    ),
-  ];
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return <AIWelcomeStep setFormData={setFormData} setStep={setStep} />;
+      case 2:
+        return (
+          <AIPromptStep
+            isGenerating={isGenerating}
+            handleGenerate={handleGenerate}
+            setFormData={setFormData}
+            setStep={setStep}
+          />
+        );
+      case 3:
+        return (
+          <JobDetailsStep
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+        );
+      case 4:
+        return (
+          <BudgetStep
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+        );
+      case 5:
+        return (
+          <JobPreview
+            formData={formData}
+            setStep={setStep}
+            handleSubmit={handleSubmit}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const calculateProgress = () => {
-    const totalSteps = formData.useAI ? steps.length : steps.length - 1;
-    const currentProgress = formData.useAI ? step : step - 1;
-    return (currentProgress / totalSteps) * 100;
+    return ((step - 1) / (TOTAL_STEPS - 1)) * 100;
   };
 
   const handleContinue = () => {
-    if (step === steps.length) {
-      if (validateForm()) {
-        handleSubmit();
-      }
+    if (step === TOTAL_STEPS) {
+      handleSubmit();
     } else {
       setStep(step + 1);
     }
   };
-
-  const CurrentStep = steps[step - 1];
 
   return (
     <div className="min-h-screen bg-white">
@@ -243,45 +281,39 @@ const PostJobFlow = () => {
           </button>
         )}
 
-        <CurrentStep />
+        {renderStep()}
 
-        <div className="max-w-2xl mx-auto mt-8 flex justify-end gap-4">
-          <button
-            onClick={() => navigate("/brand/jobs")}
-            className="px-6 py-2 text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-
-          {step > 2 && (
+        <div className="max-w-4xl mx-auto mt-8 flex items-center justify-end border-t border-gray-200 pt-6">
+          <div className="flex gap-4">
             <button
-              onClick={handleContinue}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              onClick={() => navigate("/brand/dashboard")}
+              className="px-6 py-2 text-gray-600 hover:text-gray-800 rounded-lg"
             >
-              {step === steps.length ? "Post Job" : "Continue"}
+              Cancel
             </button>
-          )}
+
+            {step !== 2 && step !== 5 && (
+              <button
+                onClick={handleContinue}
+                disabled={isSubmitting}
+                className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Display any validation errors */}
-      {step === steps.length && (
-        <div className="max-w-2xl mx-auto mt-4">
-          {Object.entries(formData).map(([key, value]) => {
-            if (
-              !value &&
-              ["title", "description", "category", "budget"].includes(key)
-            ) {
-              return (
-                <p key={key} className="text-red-500 text-sm">
-                  {key.charAt(0).toUpperCase() + key.slice(1)} is required
-                </p>
-              );
-            }
-            return null;
-          })}
-        </div>
-      )}
     </div>
   );
 };

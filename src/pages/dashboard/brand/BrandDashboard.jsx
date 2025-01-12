@@ -6,6 +6,7 @@ import {
   TrendingUp,
   MapPin,
   Calendar,
+  IndianRupee,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -104,7 +105,7 @@ const BrandDashboard = () => {
       iconColor: "text-purple-600",
     },
     {
-      icon: DollarSign,
+      icon: IndianRupee,
       label: "Total Spent",
       value: `$${(dashboardData?.totalSpent || 0).toLocaleString()}`,
       iconBg: "bg-green-100",

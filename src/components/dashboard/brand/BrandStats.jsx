@@ -1,4 +1,4 @@
-import { BriefcaseIcon, Users, DollarSign } from "lucide-react";
+import { BriefcaseIcon, Users, DollarSign, IndianRupee } from "lucide-react";
 
 const BrandStats = () => {
   const stats = [
@@ -17,7 +17,7 @@ const BrandStats = () => {
       iconColor: "text-purple-600",
     },
     {
-      icon: DollarSign,
+      icon: IndianRupee,
       label: "Total Spent",
       value: "$24,500",
       iconBg: "bg-green-100",

@@ -36,27 +36,29 @@ const Signup = () => {
     e.preventDefault();
     setError("");
 
-    // Validate required fields
-    if (!formData.fullName?.trim()) {
-      setError("Full name is required");
-      return;
+    if (mode === "creator") {
+      if (!formData.fullName?.trim()) {
+        setError("Full name is required");
+        return;
+      }
+    } else {
+      if (!formData.companyName?.trim()) {
+        setError("Company name is required");
+        return;
+      }
     }
-
     if (!formData.email?.trim()) {
       setError("Email is required");
       return;
     }
-
     if (!formData.password?.trim()) {
       setError("Password is required");
       return;
     }
-
     if (!phoneNumber || phoneNumber.length < 13) {
       setError("Please enter a valid phone number");
       return;
     }
-
     try {
       const validationResponse = await validateNewEmailorPhone({
         entity: mode,
@@ -68,8 +70,6 @@ const Signup = () => {
         setError(validationResponse.error);
         return;
       }
-
-      // Store signup data
       const signupData = {
         ...formData,
         userType: mode,
@@ -101,6 +101,7 @@ const Signup = () => {
     onSuccess: async (savedData) => {
       try {
         const response = await createUser(savedData.userType, savedData);
+        console.log("Signup response:", response);
         dispatch(
           loginSuccess({
             profile: response.profile,
@@ -288,9 +289,9 @@ const Signup = () => {
               Sign in
             </Link>
           </div>
-          <div id="recaptcha-container" ref={recaptchaRef}></div>
         </div>
       </div>
+      <div id="recaptcha-container"></div>
     </div>
   );
 };

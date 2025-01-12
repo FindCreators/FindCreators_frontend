@@ -36,11 +36,10 @@ const createStreamUser = async (userId, name, image) => {
 
 const initializeStreamChannel = async (client, channelData) => {
   try {
-
     const channelId = `${channelData.brandId}-${channelData.creatorId}`;
     const channel = client.channel("messaging", channelId, {
       members: [channelData.brandId, channelData.creatorId],
-      data:channelData,
+      data: channelData,
       name: "FindCreators Chat",
     });
 
@@ -79,7 +78,7 @@ const MyChat = () => {
         };
         setUser(currentUser);
 
-        if(channelData){
+        if (channelData) {
           await createStreamUser(
             channelData.creatorId,
             channelData.creatorName,
@@ -92,11 +91,7 @@ const MyChat = () => {
         await client.connectUser(currentUser, tokenData.token);
 
         if (channelData) {
-
-          const newChannel = await initializeStreamChannel(
-            client,
-            channelData
-          );
+          const newChannel = await initializeStreamChannel(client, channelData);
           if (mounted) setChannel(newChannel);
         }
       } catch (error) {

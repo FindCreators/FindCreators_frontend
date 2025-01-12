@@ -8,7 +8,7 @@ const firebaseConfig = {
   storageBucket: "findcreators-a9ec2.firebasestorage.app",
   messagingSenderId: "450258334833",
   appId: "1:450258334833:web:65392f9faea58ddee2d7d0",
-  measurementId: "G-",
+  measurementId: "G-2PGSP7HLLG",
 };
 
 const app = initializeApp(firebaseConfig);

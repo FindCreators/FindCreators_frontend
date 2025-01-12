@@ -6,6 +6,7 @@ import {
   ExternalLink,
   DollarSign,
   Tag,
+  IndianRupee,
 } from "lucide-react";
 import { makeRequest } from "../../../network/apiHelpers";
 import { getBrandProfile } from "../../../network/networkCalls";
@@ -137,7 +138,7 @@ const MyApplications = () => {
                       {new Date(app.createdAt).toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4" />
+                      <IndianRupee className="w-4 h-4" />
                       {app.currency || "$"}{" "}
                       {app.budget?.toLocaleString() || "N/A"}
                     </div>

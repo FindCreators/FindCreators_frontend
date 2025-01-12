@@ -10,6 +10,7 @@ import {
   Mail,
   Phone,
   Send,
+  IndianRupee,
 } from "lucide-react";
 import { makeRequest } from "../../../network/apiHelpers";
 import {
@@ -281,7 +282,7 @@ const InProgressJobs = () => {
 
               <div className="flex flex-col gap-3 md:text-right">
                 <div className="flex items-center gap-1 text-green-600 font-medium">
-                  <DollarSign className="w-4 h-4" />
+                  <IndianRupee className="w-4 h-4" />
                   {job.currency} {job.budget?.toLocaleString()}
                 </div>
 

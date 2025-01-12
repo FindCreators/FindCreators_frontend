@@ -6,6 +6,7 @@ import {
   DollarSign,
   MapPin,
   Calendar,
+  IndianRupee,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -169,7 +170,7 @@ const CreatorDashboard = () => {
       iconColor: "text-green-600",
     },
     {
-      icon: DollarSign,
+      icon: IndianRupee,
       label: "Total Earned",
       value: `$${(dashboardData?.totalEarned ?? 0).toLocaleString()}`,
       iconBg: "bg-purple-100",

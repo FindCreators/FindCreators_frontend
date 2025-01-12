@@ -10,6 +10,7 @@ import {
   Trash,
   User,
   Mail,
+  IndianRupee,
 } from "lucide-react";
 import { getCreatorProfile } from "../../../network/networkCalls";
 import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
@@ -490,7 +491,7 @@ const OffersManagement = () => {
                   {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
                 </span>
                 <div className="flex items-center gap-1 text-green-600 font-medium">
-                  <DollarSign className="w-4 h-4" />
+                  <IndianRupee className="w-4 h-4" />
                   {offer.amount.toLocaleString()}
                 </div>
                 {offer.status !== "accepted" && (

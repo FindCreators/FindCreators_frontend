@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Filter,
   BriefcaseIcon,
+  IndianRupee,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getCreatorsByIdArray } from "../../../network/networkCalls";
@@ -53,7 +54,7 @@ const JobSummaryCard = ({ jobDetails, proposals = [] }) => (
         <h2 className="text-xl font-semibold mb-2">{jobDetails.title}</h2>
         <div className="flex flex-wrap gap-3 text-sm text-gray-600">
           <div className="flex items-center gap-1">
-            <DollarSign className="w-4 h-4" />
+            <IndianRupee className="w-4 h-4" />
             <span>
               {jobDetails.currency} {jobDetails.budget?.toLocaleString()}
             </span>
@@ -206,7 +207,7 @@ const ProposalCard = ({ proposal, onHire, onChat }) => {
 
             <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <DollarSign className="w-4 h-4" />
+                <IndianRupee className="w-4 h-4" />
                 <span>Rate: ${creator.preferredRate}/hr</span>
               </div>
               <span>•</span>
