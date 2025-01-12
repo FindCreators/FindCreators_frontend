@@ -11,6 +11,8 @@ import {
   User,
   Mail,
   IndianRupee,
+  FileText,
+  Download,
 } from "lucide-react";
 import { getCreatorProfile } from "../../../network/networkCalls";
 import CreatorProfileModal from "../../../components/dashboard/creator/CreatorProfileModal";
@@ -504,7 +506,46 @@ const OffersManagement = () => {
                 )}
               </div>
             </div>
+
             <p className="text-gray-600 mt-2">{offer.details}</p>
+
+            {offer.attachments?.length > 0 && (
+              <div className="mt-4 border-t pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-medium text-gray-900">Attachments</h4>
+                </div>
+                <div className="space-y-2">
+                  {offer.attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700">
+                            {attachment.fileName}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {formatDate(attachment.uploadedAt)}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={attachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-200"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <CreatorInfo creatorId={offer.creatorId} brandId={offer.brandId} />
 
             {offer.paymentSchedule.type === "milestone" && (

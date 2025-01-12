@@ -184,14 +184,14 @@ const JobPreview = ({ formData, setStep, handleSubmit }) => {
                 </div>
               </div>
 
-              {formData.duration && (
+              {formData.deadline && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Duration
+                    deadline
                   </h4>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-900">{formData.duration}</span>
+                    <span className="text-gray-900">{formData.deadline}</span>
                   </div>
                 </div>
               )}
@@ -249,22 +249,39 @@ const JobPreview = ({ formData, setStep, handleSubmit }) => {
               <p className="text-gray-500">No attachments uploaded</p>
             )}
 
-            {formData.attachmentLink && (
+            {formData.externalLinks?.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  External Link
+                  External Links
                 </h4>
-                <a
-                  href={formData.attachmentLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                >
-                  <LinkIcon className="w-4 h-4" />
-                  <span className="underline">{formData.attachmentLink}</span>
-                </a>
+                <div className="space-y-2">
+                  {formData.externalLinks.map((url, index) => (
+                    <a
+                      key={index}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <LinkIcon className="w-4 h-4 text-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700">
+                            {formData.externalLinkTitles[index]}
+                          </span>
+                          <span className="text-xs text-gray-500">{url}</span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
+
+            {!formData.attachments?.length &&
+              !formData.externalLinks?.length && (
+                <p className="text-gray-500">No attachments or links added</p>
+              )}
           </PreviewSection>
         </div>
       </div>

@@ -7,6 +7,8 @@ import {
   X,
   FileText,
   Paperclip,
+  Plus,
+  LinkIcon,
 } from "lucide-react";
 
 const JobDetailsStep = ({ formData, handleInputChange }) => {
@@ -24,11 +26,12 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
       city: formData.location.city,
     },
     attachments: formData.attachments,
-    attachmentLink: formData.attachmentLink,
+    externalLinks: formData.externalLinks,
   });
 
   const [skillInput, setSkillInput] = useState(formData.skills.join(", "));
   const [isDragging, setIsDragging] = useState(false);
+  const [newLink, setNewLink] = useState({ title: "", url: "" });
 
   useEffect(() => {
     setLocalFormData({
@@ -41,7 +44,7 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
         city: formData.location.city,
       },
       attachments: formData.attachments,
-      attachmentLink: formData.attachmentLink,
+      externalLinks: formData.externalLinks || [],
     });
     setSkillInput(formData.skills.join(", "));
   }, [formData]);
@@ -139,6 +142,49 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
     });
   };
 
+  const handleAddExternalLink = () => {
+    if (newLink.title && newLink.url) {
+      const updatedUrls = [...formData.externalLinks, newLink.url];
+      const updatedTitles = [...formData.externalLinkTitles, newLink.title];
+
+      handleInputChange({
+        target: {
+          name: "externalLinks",
+          value: updatedUrls,
+        },
+      });
+
+      handleInputChange({
+        target: {
+          name: "externalLinkTitles",
+          value: updatedTitles,
+        },
+      });
+
+      setNewLink({ title: "", url: "" });
+    }
+  };
+
+  const handleRemoveExternalLink = (index) => {
+    const updatedUrls = formData.externalLinks.filter((_, i) => i !== index);
+    const updatedTitles = formData.externalLinkTitles.filter(
+      (_, i) => i !== index
+    );
+
+    handleInputChange({
+      target: {
+        name: "externalLinks",
+        value: updatedUrls,
+      },
+    });
+
+    handleInputChange({
+      target: {
+        name: "externalLinkTitles",
+        value: updatedTitles,
+      },
+    });
+  };
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
       <div className="space-y-2">
@@ -363,23 +409,78 @@ const JobDetailsStep = ({ formData, handleInputChange }) => {
               </div>
             )}
 
-            <div>
-              <label
-                htmlFor="attachment-link-input"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Or add a link to your files
-              </label>
-              <input
-                id="attachment-link-input"
-                type="text"
-                name="attachmentLink"
-                value={localFormData.attachmentLink}
-                onChange={handleLocalChange}
-                onBlur={handleBlur}
-                placeholder="e.g. Google Drive, Dropbox, or other sharing link"
-                className="mt-1 w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <LinkIcon className="w-5 h-5 text-blue-600" />
+                <label className="text-lg font-semibold text-gray-900">
+                  External Links
+                </label>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Link Title"
+                    value={newLink.title}
+                    onChange={(e) =>
+                      setNewLink((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    className="px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                  <input
+                    type="url"
+                    placeholder="URL (e.g., https://example.com)"
+                    value={newLink.url}
+                    onChange={(e) =>
+                      setNewLink((prev) => ({ ...prev, url: e.target.value }))
+                    }
+                    className="px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <button
+                  onClick={handleAddExternalLink}
+                  disabled={!newLink.title || !newLink.url}
+                  className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Link</span>
+                </button>
+
+                {formData.externalLinks.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    {formData.externalLinks.map((url, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <LinkIcon className="w-4 h-4 text-gray-500" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">
+                              {formData.externalLinkTitles[index]}
+                            </span>
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:underline"
+                            >
+                              {url}
+                            </a>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveExternalLink(index)}
+                          className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                        >
+                          <X className="w-4 h-4 text-gray-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

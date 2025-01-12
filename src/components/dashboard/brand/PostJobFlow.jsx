@@ -42,7 +42,8 @@ const PostJobFlow = () => {
     startDate: "",
     endDate: "",
     attachments: [],
-    attachmentLink: "",
+    externalLinks: [],
+    externalLinkTitles: [],
   });
 
   const handleInputChange = (e) => {
@@ -145,6 +146,7 @@ const PostJobFlow = () => {
     return true;
   };
 
+  // In PostJobFlow.jsx, update the handleSubmit function
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -152,49 +154,51 @@ const PostJobFlow = () => {
     try {
       const formPayload = new FormData();
 
-      // Helper function to format dates to ISO string
-      const formatDate = (dateStr) => {
+      // Helper function to format dates to ISO string with specific time for deadline
+      const formatDate = (dateStr, isDeadline = false) => {
         if (!dateStr) return "";
         const date = new Date(dateStr);
-        // Set time to midnight UTC
-        date.setUTCHours(0, 0, 0, 0);
-        return date.toISOString(); // Will format as "YYYY-MM-DDT00:00:00.000Z"
+        if (isDeadline) {
+          // Set time to 18:30:00 UTC for deadline
+          date.setUTCHours(18, 30, 0, 0);
+        } else {
+          // Set time to 00:00:00 UTC for other dates
+          date.setUTCHours(0, 0, 0, 0);
+        }
+        return date.toISOString();
       };
 
       // Add all fields to FormData with special handling for certain fields
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "location") {
-          // Handle nested location object
           formPayload.append("location.country", value.country || "");
           formPayload.append("location.city", value.city || "");
         } else if (key === "skills") {
-          // Join array of skills with commas
           formPayload.append(
             "skills",
             Array.isArray(value) ? value.join(",") : value
           );
         } else if (key === "attachments") {
-          // Handle file attachments
           if (Array.isArray(value)) {
             value.forEach((file) => {
               formPayload.append("attachments", file);
             });
           }
-        } else if (key === "startDate") {
-          // Format start date
-          formPayload.append("startDate", formatDate(value));
-        } else if (key === "endDate") {
-          // Format end date
-          formPayload.append("endDate", formatDate(value));
+        } else if (key === "externalLinks" || key === "externalLinkTitles") {
+          // Send as comma-separated strings
+          formPayload.append(key, Array.isArray(value) ? value.join(",") : "");
+        } else if (key === "deadline") {
+          // Format deadline with specific time
+          formPayload.append("deadline", formatDate(value, true));
+        } else if (key === "startDate" || key === "endDate") {
+          formPayload.append(key, formatDate(value));
         } else {
-          // Handle all other fields normally
           formPayload.append(key, value);
         }
       });
 
-      // Log the formatted dates for verification
-      console.log("Formatted startDate:", formPayload.get("startDate"));
-      console.log("Formatted endDate:", formPayload.get("endDate"));
+      // Log the formatted deadline for verification
+      console.log("Formatted deadline:", formPayload.get("deadline"));
 
       await createJobListing(formPayload);
       toast.success("Job posted successfully!");

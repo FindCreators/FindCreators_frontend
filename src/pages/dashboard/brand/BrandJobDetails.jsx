@@ -14,6 +14,8 @@ import {
   Users,
   Link as LinkIcon,
   IndianRupee,
+  Paperclip,
+  FileText,
 } from "lucide-react";
 import { makeRequest } from "../../../network/apiHelpers";
 import toast from "react-hot-toast";
@@ -231,7 +233,6 @@ const BrandJobDetails = () => {
           <h1 className="text-2xl font-semibold mb-2">{job.title}</h1>
           <p className="text-gray-600">Posted on {formatDate(job.createdAt)}</p>
         </div>
-
         {/* Quick Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <InfoCard
@@ -242,15 +243,25 @@ const BrandJobDetails = () => {
           <InfoCard
             icon={Clock}
             title="Duration"
-            value={job.duration || "Not specified"}
+            value={
+              job.deadline
+                ? `${Math.max(
+                    Math.ceil(
+                      (new Date(job.deadline) - new Date()) /
+                        (1000 * 60 * 60 * 24)
+                    ),
+                    0
+                  )} days`
+                : "Not specified"
+            }
           />
+
           <InfoCard
             icon={Users}
             title="Applications"
             value={`${job.applicationsCount || 0} Proposals`}
           />
         </div>
-
         {/* Detailed Info */}
         <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
           {/* Description */}
@@ -320,35 +331,101 @@ const BrandJobDetails = () => {
               <p className="text-gray-700">{formatDate(job.endDate)}</p>
             </div>
           </div>
+        </div>
+        {/* Attachments and Links Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+          <h2 className="text-lg font-semibold mb-4">
+            Attachments & External Links
+          </h2>
 
-          {/* Attachments Section */}
-          {job.attachments?.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Attachments */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <LinkIcon className="w-5 h-5 text-gray-500" />
-                <h3 className="text-lg font-semibold">Attachments</h3>
+                <Paperclip className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Attachments
+                </h3>
               </div>
-              <div className="space-y-2">
-                {job.attachments.map((attachment, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                  >
-                    <Tag className="w-4 h-4" />
-                    <a
-                      href={attachment.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+              {job.attachments?.length > 0 ? (
+                <div className="space-y-2">
+                  {job.attachments.map((attachment, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
                     >
-                      {attachment.name}
-                    </a>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700">
+                            {attachment.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(
+                              attachment.uploadedAt
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className=" px-3  cursor-pointer py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium  hover:bg-blue-200"
+                      >
+                        View
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No attachments uploaded</p>
+              )}
             </div>
-          )}
-        </div>
 
+            {/* External Links */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <LinkIcon className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  External Links
+                </h3>
+              </div>
+              {job.externalLinks?.length > 0 ? (
+                <div className="space-y-2">
+                  {job.externalLinks.map((link, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <LinkIcon className="w-4 h-4 text-gray-500" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700">
+                            {link.title}
+                          </span>
+                          <span className="text-xs text-gray-500 truncate max-w-[200px]">
+                            {link.url}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className=" px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium transition-opacity hover:bg-blue-200"
+                      >
+                        Visit
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No external links added</p>
+              )}
+            </div>
+          </div>
+        </div>
         {/* View Proposals Button */}
         <div className="flex justify-end">
           <button

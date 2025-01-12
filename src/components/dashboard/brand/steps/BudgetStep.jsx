@@ -5,7 +5,7 @@ const BudgetStep = ({ formData, handleInputChange }) => {
   const [localFormData, setLocalFormData] = useState({
     budget: formData.budget,
     currency: formData.currency || "USD",
-    duration: formData.duration,
+    deadline: formData.deadline,
     startDate: formData.startDate,
     endDate: formData.endDate,
   });
@@ -16,7 +16,7 @@ const BudgetStep = ({ formData, handleInputChange }) => {
     setLocalFormData({
       budget: formData.budget,
       currency: formData.currency || "USD",
-      duration: formData.duration,
+      deadline: formData.deadline,
       startDate: formData.startDate,
       endDate: formData.endDate,
     });
@@ -40,13 +40,17 @@ const BudgetStep = ({ formData, handleInputChange }) => {
 
   const validateDates = () => {
     const errors = {};
-    if (localFormData.startDate && localFormData.endDate) {
-      const start = new Date(localFormData.startDate);
-      const end = new Date(localFormData.endDate);
-      if (end < start) {
-        errors.endDate = "End date must be after start date";
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (localFormData.deadline) {
+      const deadline = new Date(localFormData.deadline);
+      deadline.setHours(0, 0, 0, 0);
+      if (deadline < now) {
+        errors.deadline = "Deadline cannot be in the past";
       }
     }
+
     return errors;
   };
 
@@ -140,24 +144,26 @@ const BudgetStep = ({ formData, handleInputChange }) => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Estimated Duration
+                Deadline Date
               </label>
-              <select
-                name="duration"
-                value={localFormData.duration}
+              <input
+                type="date"
+                name="deadline"
+                value={localFormData.deadline}
                 onChange={handleLocalChange}
                 onBlur={handleBlur}
-                className="mt-1 w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">Select duration</option>
-                <option value="1 week">1 week</option>
-                <option value="2 weeks">2 weeks</option>
-                <option value="1 month">1 month</option>
-                <option value="2 months">2 months</option>
-                <option value="3 months">3 months</option>
-                <option value="6 months">6 months</option>
-                <option value="custom">Custom duration</option>
-              </select>
+                min={new Date().toISOString().split("T")[0]}
+                className={`mt-1 w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  validationErrors.deadline
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+              />
+              {validationErrors.deadline && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.deadline}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
